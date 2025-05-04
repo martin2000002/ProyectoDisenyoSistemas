@@ -1,0 +1,95 @@
+services:
+  central-server:
+    build:
+      context: .
+      dockerfile: DockerfileCentral
+    ports:
+      - "9090:9090"
+    networks:
+      - meeting-network
+    volumes:
+      - ./:/app
+
+  alice-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - EMPLOYEE_NAME=Alice_White
+        - EMPLOYEE_PORT=8081
+    ports:
+      - "8081:8081"
+    networks:
+      - meeting-network
+    depends_on:
+      - central-server
+    volumes:
+      - ./:/app
+
+  bob-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - EMPLOYEE_NAME=Bob_Smith
+        - EMPLOYEE_PORT=8082
+    ports:
+      - "8082:8082"
+    networks:
+      - meeting-network
+    depends_on:
+      - central-server
+    volumes:
+      - ./:/app
+
+  carol-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - EMPLOYEE_NAME=Carol_Simpson
+        - EMPLOYEE_PORT=8083
+    ports:
+      - "8083:8083"
+    networks:
+      - meeting-network
+    depends_on:
+      - central-server
+    volumes:
+      - ./:/app
+
+  david-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - EMPLOYEE_NAME=David_Black
+        - EMPLOYEE_PORT=8084
+    ports:
+      - "8084:8084"
+    networks:
+      - meeting-network
+    depends_on:
+      - central-server
+    volumes:
+      - ./:/app
+
+  eva-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - EMPLOYEE_NAME=Eva_Brown
+        - EMPLOYEE_PORT=8085
+    ports:
+      - "8085:8085"
+    networks:
+      - meeting-network
+    depends_on:
+      - central-server
+    volumes:
+      - ./:/app
+
+networks:
+  meeting-network:
+    driver: bridge
