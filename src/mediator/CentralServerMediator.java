@@ -31,23 +31,65 @@ public class CentralServerMediator implements Mediator {
     
     @Override
     public void sendMessage(String message, String sender) {
-        // Extraer los empleados involucrados del mensaje
-        // Por ahora, enviar a todos para simplificar
-        for (Map.Entry<String, Integer> entry : employeePorts.entrySet()) {
-            String employeeName = entry.getKey();
-            int port = entry.getValue();
+        try {
+            // Extraer información del mensaje
+            String[] lines = message.split("\n");
+            String topic = "";
+            String organizer = "";
+            String invitedLine = "";
             
-            // Construir el nombre de host basado en el nombre del empleado
-            String hostname = employeeName.toLowerCase().replace('_', '-') + "-server";
-            
-            try {
-                Socket socket = new Socket(hostname, port);
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                out.println(message);
-                socket.close();
-            } catch (IOException e) {
-                System.err.println("Error sending message to " + employeeName + ": " + e.getMessage());
+            for (String line : lines) {
+                if (line.startsWith("TOPIC=")) {
+                    topic = line.substring(6);
+                } else if (line.startsWith("ORGANIZER=")) {
+                    organizer = line.substring(10);
+                } else if (line.startsWith("INVITED=")) {
+                    invitedLine = line.substring(8);
+                }
             }
+            
+            System.out.println("Procesando reunión: " + topic + " (Organizada por: " + organizer + ")");
+            
+            // Lista de empleados invitados
+            String[] invitedEmployees = invitedLine.split(",");
+            System.out.println("Invitados: " + invitedLine);
+            
+            // Enviar a todos los empleados relevantes (organizador e invitados)
+            for (Map.Entry<String, Integer> entry : employeePorts.entrySet()) {
+                String employeeName = entry.getKey();
+                int port = entry.getValue();
+                
+                // Verificar si el empleado es el organizador o está invitado
+                boolean isInvolved = employeeName.equals(organizer);
+                if (!isInvolved) {
+                    for (String invited : invitedEmployees) {
+                        if (employeeName.equals(invited.trim())) {
+                            isInvolved = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (isInvolved) {
+                    try {
+                        // Cambio crucial: usar "host.docker.internal" para acceder al host desde Docker
+                        // Esto funciona en Windows y Mac
+                        System.out.println("Enviando mensaje a " + employeeName + " en puerto " + port);
+                        Socket socket = new Socket("host.docker.internal", port);
+                        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                        out.println(message);
+                        out.flush();
+                        socket.close();
+                        System.out.println("Mensaje enviado con éxito a " + employeeName);
+                    } catch (IOException e) {
+                        System.err.println("Error sending message to " + employeeName + ": " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error general en sendMessage: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

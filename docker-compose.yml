@@ -1,3 +1,5 @@
+version: '3'
+
 services:
   central-server:
     build:
@@ -9,6 +11,8 @@ services:
       - meeting-network
     volumes:
       - ./:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   alice-server:
     build:
@@ -105,6 +109,8 @@ services:
       - eva-server
     volumes:
       - ./:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: ["sh", "-c", "mkdir -p classes && javac -d ./classes ./src/client/EmployeeClient.java ./src/model/*.java && echo 'Cliente listo para ser usado. Ejecuta: docker exec -it proyecto-client-1 /bin/bash' && tail -f /dev/null"]
 
 networks:
