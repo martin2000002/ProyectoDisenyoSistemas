@@ -1,5 +1,5 @@
 # Dockerfile para Servidores de Empleados
-FROM openjdk:17
+FROM openjdk:24
 WORKDIR /app
 COPY ./src ./src
 RUN mkdir -p classes && javac -d ./classes ./src/observer/*.java ./src/server/EmployeeServer.java ./src/model/*.java

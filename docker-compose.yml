@@ -90,6 +90,23 @@ services:
     volumes:
       - ./:/app
 
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - meeting-network
+    depends_on:
+      - central-server
+      - alice-server
+      - bob-server
+      - carol-server
+      - david-server
+      - eva-server
+    volumes:
+      - ./:/app
+    command: ["sh", "-c", "mkdir -p classes && javac -d ./classes ./src/client/EmployeeClient.java ./src/model/*.java && echo 'Cliente listo para ser usado. Ejecuta: docker exec -it proyecto-client-1 /bin/bash' && tail -f /dev/null"]
+
 networks:
   meeting-network:
     driver: bridge
