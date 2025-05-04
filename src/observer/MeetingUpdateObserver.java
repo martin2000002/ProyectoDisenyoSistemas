@@ -13,18 +13,25 @@ public class MeetingUpdateObserver implements Observer {
     private String employeeName;
     private String meetingsFilePath;
     
+    // En MeetingUpdateObserver.java:
     public MeetingUpdateObserver(String employeeName) {
         this.employeeName = employeeName;
-        this.meetingsFilePath = employeeName + "_meetings.txt";
+        this.meetingsFilePath = "/app/data/" + employeeName + "_meetings.txt";
+        
+        System.out.println("MeetingUpdateObserver: Using file path: " + meetingsFilePath);
         
         // Crear archivo si no existe
         try {
             File file = new File(meetingsFilePath);
+            System.out.println("MeetingUpdateObserver: File exists? " + file.exists());
+            System.out.println("MeetingUpdateObserver: File absolute path: " + file.getAbsolutePath());
             if (!file.exists()) {
-                file.createNewFile();
+                boolean created = file.createNewFile();
+                System.out.println("MeetingUpdateObserver: File created? " + created);
             }
         } catch (IOException e) {
             System.err.println("Error creating meetings file: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

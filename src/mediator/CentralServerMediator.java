@@ -15,6 +15,17 @@ public class CentralServerMediator implements Mediator {
     public CentralServerMediator() {
         loadEmployeeProperties();
     }
+
+    private String getEmployeeHost(String employeeName) {
+        switch (employeeName) {
+            case "Alice_White": return "alice-server";
+            case "Bob_Smith": return "bob-server";
+            case "Carol_Simpson": return "carol-server";
+            case "David_Black": return "david-server";
+            case "Eva_Brown": return "eva-server";
+            default: return "localhost";
+        }
+    }
     
     private void loadEmployeeProperties() {
         Properties properties = new Properties();
@@ -72,7 +83,7 @@ public class CentralServerMediator implements Mediator {
                 if (isInvolved) {
                     try {
                         System.out.println("Sending message to " + employeeName);
-                        Socket socket = new Socket("host.docker.internal", port);
+                        Socket socket = new Socket(getEmployeeHost(employeeName), port);
                         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                         out.println(message);
                         out.flush();

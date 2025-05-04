@@ -3,6 +3,7 @@ FROM openjdk:24
 WORKDIR /app
 COPY ./src ./src
 COPY ./employees.properties .
-RUN mkdir -p classes && javac -d ./classes ./src/mediator/*.java ./src/server/CentralServer.java ./src/model/*.java ./src/observer/*.java
+RUN mkdir -p classes && \
+    javac -d ./classes ./src/model/*.java ./src/observer/*.java ./src/mediator/*.java ./src/server/CentralServer.java
 EXPOSE 9090
 CMD ["java", "-cp", "./classes", "server.CentralServer"]

@@ -2,6 +2,7 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,7 +22,7 @@ public class EmployeeClient {
     
     public EmployeeClient(String employeeName) {
         this.employeeName = employeeName;
-        this.meetingsFilePath = employeeName + "_meetings.txt";
+        this.meetingsFilePath = "/app/data/" + employeeName + "_meetings.txt";
     }
     
     public void createMeeting(String topic, List<String> invitedEmployees, String location, 
@@ -51,14 +52,22 @@ public class EmployeeClient {
     }
     
     // Método para cargar las reuniones existentes
+
     private List<Meeting> loadMeetings() {
         List<Meeting> meetings = new ArrayList<>();
         try {
+            System.out.println("EmployeeClient: Trying to load meetings from: " + meetingsFilePath);
+            File file = new File(meetingsFilePath);
+            System.out.println("EmployeeClient: File exists? " + file.exists());
+            System.out.println("EmployeeClient: File absolute path: " + file.getAbsolutePath());
+            System.out.println("EmployeeClient: File can read? " + file.canRead());
+            
             BufferedReader reader = new BufferedReader(new FileReader(meetingsFilePath));
             StringBuilder meetingStr = new StringBuilder();
             String line;
             
             while ((line = reader.readLine()) != null) {
+                System.out.println("EmployeeClient: Read line: " + line);
                 if (line.trim().isEmpty() && meetingStr.length() > 0) {
                     // Fin de una reunión, procesarla
                     meetings.add(Meeting.fromStringFormat(meetingStr.toString()));
@@ -75,8 +84,10 @@ public class EmployeeClient {
             }
             
             reader.close();
+            System.out.println("EmployeeClient: Successfully loaded " + meetings.size() + " meetings");
         } catch (IOException e) {
-            System.out.println("No meetings found or error reading meetings file.");
+            System.out.println("EmployeeClient: Error reading meetings file: " + e.getMessage());
+            e.printStackTrace();
         }
         return meetings;
     }

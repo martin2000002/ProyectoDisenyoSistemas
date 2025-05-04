@@ -1,4 +1,3 @@
-
 services:
   central-server:
     build:
@@ -8,10 +7,7 @@ services:
       - "9090:9090"
     networks:
       - meeting-network
-    volumes:
-      - ./:/app
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # Eliminamos el volumen que sobrescribía los archivos compilados
 
   alice-server:
     build:
@@ -26,8 +22,7 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    volumes:
-      - ./:/app
+    # Eliminamos el volumen que sobrescribía los archivos compilados
 
   bob-server:
     build:
@@ -42,8 +37,7 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    volumes:
-      - ./:/app
+    # Eliminamos el volumen que sobrescribía los archivos compilados
 
   carol-server:
     build:
@@ -58,8 +52,7 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    volumes:
-      - ./:/app
+    # Eliminamos el volumen que sobrescribía los archivos compilados
 
   david-server:
     build:
@@ -74,8 +67,7 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    volumes:
-      - ./:/app
+    # Eliminamos el volumen que sobrescribía los archivos compilados
 
   eva-server:
     build:
@@ -90,13 +82,12 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    volumes:
-      - ./:/app
+    # Eliminamos el volumen que sobrescribía los archivos compilados
 
   client:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: DockerfileClient
     networks:
       - meeting-network
     depends_on:
@@ -107,10 +98,10 @@ services:
       - david-server
       - eva-server
     volumes:
-      - ./:/app
+      # Mantenemos este volumen para poder acceder a los archivos de reuniones
+      - ./:/app/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command: ["sh", "-c", "mkdir -p classes && javac -d ./classes ./src/client/EmployeeClient.java ./src/model/*.java && echo 'Cliente listo para ser usado. Ejecuta: docker exec -it proyecto-client-1 java -cp ./classes client.EmployeeClient"]
 
 networks:
   meeting-network:
