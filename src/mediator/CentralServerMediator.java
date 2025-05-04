@@ -48,11 +48,10 @@ public class CentralServerMediator implements Mediator {
                 }
             }
             
-            System.out.println("Procesando reunión: " + topic + " (Organizada por: " + organizer + ")");
+            System.out.println("Processing meeting: " + topic + " (Organized by: " + organizer + ")");
             
             // Lista de empleados invitados
             String[] invitedEmployees = invitedLine.split(",");
-            System.out.println("Invitados: " + invitedLine);
             
             // Enviar a todos los empleados relevantes (organizador e invitados)
             for (Map.Entry<String, Integer> entry : employeePorts.entrySet()) {
@@ -72,23 +71,20 @@ public class CentralServerMediator implements Mediator {
                 
                 if (isInvolved) {
                     try {
-                        // Cambio crucial: usar "host.docker.internal" para acceder al host desde Docker
-                        // Esto funciona en Windows y Mac
-                        System.out.println("Enviando mensaje a " + employeeName + " en puerto " + port);
+                        System.out.println("Sending message to " + employeeName);
                         Socket socket = new Socket("host.docker.internal", port);
                         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                         out.println(message);
                         out.flush();
                         socket.close();
-                        System.out.println("Mensaje enviado con éxito a " + employeeName);
+                        System.out.println("Message sent successfully to " + employeeName);
                     } catch (IOException e) {
                         System.err.println("Error sending message to " + employeeName + ": " + e.getMessage());
-                        e.printStackTrace();
                     }
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error general en sendMessage: " + e.getMessage());
+            System.err.println("General error in sendMessage: " + e.getMessage());
             e.printStackTrace();
         }
     }

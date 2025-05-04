@@ -81,16 +81,50 @@ public class EmployeeClient {
         return meetings;
     }
     
-    public static void main(String[] args) {
-        if (args.length < 1) {
-            System.err.println("Usage: java EmployeeClient <employeeName>");
-            System.exit(1);
+    // Método para mostrar el menú de selección de empleado
+    private static String selectEmployee(Scanner scanner) {
+        System.out.println("\n===== Employee Selection =====");
+        System.out.println("1. Alice White");
+        System.out.println("2. Bob Smith");
+        System.out.println("3. Carol Simpson");
+        System.out.println("4. David Black");
+        System.out.println("5. Eva Brown");
+        System.out.print("Select an employee (1-5): ");
+        
+        int choice;
+        try {
+            choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+        } catch (Exception e) {
+            scanner.nextLine(); // Consume invalid input
+            return selectEmployee(scanner); // Recursión para volver a solicitar input
         }
         
-        String employeeName = args[0];
-        EmployeeClient client = new EmployeeClient(employeeName);
-        
+        switch (choice) {
+            case 1: return "Alice_White";
+            case 2: return "Bob_Smith";
+            case 3: return "Carol_Simpson";
+            case 4: return "David_Black";
+            case 5: return "Eva_Brown";
+            default:
+                System.out.println("Invalid selection. Please try again.");
+                return selectEmployee(scanner); // Recursión para volver a solicitar input
+        }
+    }
+    
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        String employeeName;
+        
+        if (args.length >= 1) {
+            // Si se proporciona un argumento, usarlo como nombre de empleado
+            employeeName = args[0];
+        } else {
+            // De lo contrario, mostrar menú de selección
+            employeeName = selectEmployee(scanner);
+        }
+        
+        EmployeeClient client = new EmployeeClient(employeeName);
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         
         while (true) {
@@ -100,8 +134,15 @@ public class EmployeeClient {
             System.out.println("3. Exit");
             System.out.print("Enter your choice: ");
             
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            int choice;
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+            } catch (Exception e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // Consume invalid input
+                continue;
+            }
             
             if (choice == 1) {
                 System.out.print("Enter meeting topic: ");
@@ -115,10 +156,22 @@ public class EmployeeClient {
                 String location = scanner.nextLine();
                 
                 System.out.print("Enter start time (yyyy-MM-ddTHH:mm:ss): ");
-                LocalDateTime startTime = LocalDateTime.parse(scanner.nextLine(), formatter);
+                LocalDateTime startTime;
+                try {
+                    startTime = LocalDateTime.parse(scanner.nextLine(), formatter);
+                } catch (Exception e) {
+                    System.out.println("Invalid date format. Please use yyyy-MM-ddTHH:mm:ss");
+                    continue;
+                }
                 
                 System.out.print("Enter end time (yyyy-MM-ddTHH:mm:ss): ");
-                LocalDateTime endTime = LocalDateTime.parse(scanner.nextLine(), formatter);
+                LocalDateTime endTime;
+                try {
+                    endTime = LocalDateTime.parse(scanner.nextLine(), formatter);
+                } catch (Exception e) {
+                    System.out.println("Invalid date format. Please use yyyy-MM-ddTHH:mm:ss");
+                    continue;
+                }
                 
                 client.createMeeting(topic, invitedEmployees, location, startTime, endTime);
             } else if (choice == 2) {
@@ -137,8 +190,15 @@ public class EmployeeClient {
                 }
                 
                 System.out.print("Select a meeting to modify (1-" + meetings.size() + "): ");
-                int meetingIndex = scanner.nextInt() - 1;
-                scanner.nextLine(); // Consume newline
+                int meetingIndex;
+                try {
+                    meetingIndex = scanner.nextInt() - 1;
+                    scanner.nextLine(); // Consume newline
+                } catch (Exception e) {
+                    System.out.println("Invalid input. Please enter a number.");
+                    scanner.nextLine(); // Consume invalid input
+                    continue;
+                }
                 
                 if (meetingIndex < 0 || meetingIndex >= meetings.size()) {
                     System.out.println("Invalid selection.");
@@ -156,8 +216,15 @@ public class EmployeeClient {
                 System.out.println("5. End time");
                 System.out.print("Enter your choice: ");
                 
-                int modifyChoice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                int modifyChoice;
+                try {
+                    modifyChoice = scanner.nextInt();
+                    scanner.nextLine(); // Consume newline
+                } catch (Exception e) {
+                    System.out.println("Invalid input. Please enter a number.");
+                    scanner.nextLine(); // Consume invalid input
+                    continue;
+                }
                 
                 switch (modifyChoice) {
                     case 1:
@@ -175,11 +242,21 @@ public class EmployeeClient {
                         break;
                     case 4:
                         System.out.print("Enter new start time (yyyy-MM-ddTHH:mm:ss): ");
-                        selectedMeeting.setStartTime(LocalDateTime.parse(scanner.nextLine(), formatter));
+                        try {
+                            selectedMeeting.setStartTime(LocalDateTime.parse(scanner.nextLine(), formatter));
+                        } catch (Exception e) {
+                            System.out.println("Invalid date format. Please use yyyy-MM-ddTHH:mm:ss");
+                            continue;
+                        }
                         break;
                     case 5:
                         System.out.print("Enter new end time (yyyy-MM-ddTHH:mm:ss): ");
-                        selectedMeeting.setEndTime(LocalDateTime.parse(scanner.nextLine(), formatter));
+                        try {
+                            selectedMeeting.setEndTime(LocalDateTime.parse(scanner.nextLine(), formatter));
+                        } catch (Exception e) {
+                            System.out.println("Invalid date format. Please use yyyy-MM-ddTHH:mm:ss");
+                            continue;
+                        }
                         break;
                     default:
                         System.out.println("Invalid choice.");
@@ -190,6 +267,8 @@ public class EmployeeClient {
                 System.out.println("Meeting modified successfully.");
             } else if (choice == 3) {
                 break;
+            } else {
+                System.out.println("Invalid choice. Please enter 1, 2, or 3.");
             }
         }
         
