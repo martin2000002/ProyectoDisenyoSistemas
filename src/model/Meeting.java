@@ -16,6 +16,7 @@ public class Meeting {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private LocalDateTime lastModified;
+    private boolean deleted = false; // Nuevo campo para indicar si la reunión está eliminada
     
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     
@@ -29,11 +30,12 @@ public class Meeting {
         this.startTime = startTime;
         this.endTime = endTime;
         this.lastModified = LocalDateTime.now();
+        this.deleted = false;
     }
     
     // Constructor with UUID for existing meetings
     private Meeting(String uuid, String topic, List<String> invitedEmployees, String organizer, 
-                   String location, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime lastModified) {
+                   String location, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime lastModified, boolean deleted) {
         this.uuid = uuid;
         this.topic = topic;
         this.invitedEmployees = new ArrayList<>(invitedEmployees);
@@ -42,6 +44,7 @@ public class Meeting {
         this.startTime = startTime;
         this.endTime = endTime;
         this.lastModified = lastModified;
+        this.deleted = deleted;
     }
     
     // Getters
@@ -75,6 +78,10 @@ public class Meeting {
     
     public LocalDateTime getLastModified() {
         return lastModified;
+    }
+    
+    public boolean isDeleted() {
+        return deleted;
     }
     
     // Setters
@@ -112,6 +119,16 @@ public class Meeting {
         this.lastModified = lastModified;
     }
     
+    // Método para marcar una reunión como eliminada
+    public void markAsDeleted() {
+        this.deleted = true;
+    }
+    
+    // Método para establecer el UUID (necesario para la lógica de eliminar invitados)
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+    
     // Other utility functions
     public void addInvitedEmployee(String employee) {
         this.invitedEmployees.add(employee);
@@ -132,6 +149,7 @@ public class Meeting {
         sb.append("START=").append(startTime.format(formatter)).append("\n");
         sb.append("END=").append(endTime.format(formatter)).append("\n");
         sb.append("LAST_MODIFIED=").append(lastModified.format(formatter)).append("\n");
+        sb.append("DELETED=").append(deleted).append("\n");
         sb.append("INVITED=");
         for (int i = 0; i < invitedEmployees.size(); i++) {
             sb.append(invitedEmployees.get(i));
@@ -152,6 +170,7 @@ public class Meeting {
         LocalDateTime endTime = null;
         LocalDateTime lastModified = null;
         String invitedStr = "";
+        boolean deleted = false;
         
         for (String line : lines) {
             if (line.startsWith("UUID=")) {
@@ -168,6 +187,8 @@ public class Meeting {
                 endTime = LocalDateTime.parse(line.substring(4), formatter);
             } else if (line.startsWith("LAST_MODIFIED=")) {
                 lastModified = LocalDateTime.parse(line.substring(14), formatter);
+            } else if (line.startsWith("DELETED=")) {
+                deleted = Boolean.parseBoolean(line.substring(8));
             } else if (line.startsWith("INVITED=")) {
                 invitedStr = line.substring(8);
             }
@@ -187,7 +208,7 @@ public class Meeting {
             meeting.setLastModified(lastModified);
             return meeting;
         } else {
-            return new Meeting(uuid, topic, invitedEmployees, organizer, location, startTime, endTime, lastModified);
+            return new Meeting(uuid, topic, invitedEmployees, organizer, location, startTime, endTime, lastModified, deleted);
         }
     }
     
@@ -200,6 +221,7 @@ public class Meeting {
                ", location='" + location + '\'' +
                ", startTime=" + startTime +
                ", endTime=" + endTime +
+               ", deleted=" + deleted +
                ", invitedEmployees=" + invitedEmployees +
                '}';
     }

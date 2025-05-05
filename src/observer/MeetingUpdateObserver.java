@@ -38,6 +38,7 @@ public class MeetingUpdateObserver implements Observer {
             // Extract UUID from meeting
             String uuid = extractUUID(meetingUpdate);
             String topic = extractTopic(meetingUpdate);
+            boolean isDeleted = extractDeleted(meetingUpdate);
             
             // Read the current file
             String currentContent = "";
@@ -78,13 +79,43 @@ public class MeetingUpdateObserver implements Observer {
                                 // Only update if new version is newer or same time
                                 if (newLastModified.isAfter(existingLastModified) || 
                                     newLastModified.isEqual(existingLastModified)) {
+                                    
+                                    // Si la reunión está marcada como eliminada:
+                                // - Si el empleado actual es uno de los invitados en el mensaje de eliminación,
+                                //   entonces eliminar la reunión de su archivo
+                                // - Si el empleado actual es el organizador, NO eliminar la reunión,
+                                //   pues recibirá la versión actualizada después
+                                String organizer = extractOrganizer(meetingUpdate);
+                                boolean isInvitedInDeleteMessage = isEmployeeInInvitedList(employeeName, meetingUpdate);
+                                
+                                if (isDeleted) {
+                                    // Si estamos procesando un mensaje de eliminación
+                                    if (isInvitedInDeleteMessage && !employeeName.equals(organizer)) {
+                                        // Si el empleado está en la lista del mensaje de eliminación y no es el organizador, 
+                                        // eliminamos la reunión (no la añadimos al contenido actualizado)
+                                        System.out.println("Removing deleted meeting: " + topic + " from " + employeeName + "'s file (employee was uninvited)");
+                                    } else {
+                                        // Si es el organizador o no está en la lista de eliminación, mantenemos la reunión
+                                        // (será actualizada por un mensaje posterior)
+                                        updatedContent.append(meeting).append("\n\n");
+                                    }
+                                } else {
+                                    // Si no es un mensaje de eliminación, actualizar normalmente
                                     updatedContent.append(meetingUpdate).append("\n\n");
+                                }
                                 } else {
                                     updatedContent.append(meeting).append("\n\n");
                                 }
                             } else {
                                 // If we can't determine, use the new version
-                                updatedContent.append(meetingUpdate).append("\n\n");
+                                // Pero verificar si está eliminada y el empleado actual no es el organizador
+                                String organizer = extractOrganizer(meetingUpdate);
+                                if (isDeleted && !employeeName.equals(organizer)) {
+                                    // No hacemos nada (no añadimos la reunión eliminada al contenido)
+                                    System.out.println("Removing deleted meeting: " + topic + " from " + employeeName + "'s file");
+                                } else {
+                                    updatedContent.append(meetingUpdate).append("\n\n");
+                                }
                             }
                         } else {
                             updatedContent.append(meeting).append("\n\n");
@@ -97,13 +128,21 @@ public class MeetingUpdateObserver implements Observer {
                 writer.write(updatedContent.toString());
                 writer.close();
             } else {
-                // Add the new meeting at the end
-                FileWriter writer = new FileWriter(meetingsFilePath, true);
-                writer.write(meetingUpdate + "\n\n");
-                writer.close();
+                // Solo agregamos la reunión si no está marcada como eliminada o si el empleado actual es el organizador
+                String organizer = extractOrganizer(meetingUpdate);
+                if (!isDeleted || employeeName.equals(organizer)) {
+                    // Add the new meeting at the end
+                    FileWriter writer = new FileWriter(meetingsFilePath, true);
+                    writer.write(meetingUpdate + "\n\n");
+                    writer.close();
+                }
             }
             
-            System.out.println("Meeting updated for " + employeeName + ": " + topic);
+            if (isDeleted) {
+                System.out.println("Meeting deleted for " + employeeName + ": " + topic);
+            } else {
+                System.out.println("Meeting updated for " + employeeName + ": " + topic);
+            }
         } catch (IOException e) {
             System.err.println("Error updating meetings file: " + e.getMessage());
         }
@@ -127,6 +166,15 @@ public class MeetingUpdateObserver implements Observer {
         return null;
     }
     
+    private String extractOrganizer(String meetingStr) {
+        Pattern pattern = Pattern.compile("ORGANIZER=([^\\n]+)");
+        Matcher matcher = pattern.matcher(meetingStr);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+    
     private String extractLastModified(String meetingStr) {
         Pattern pattern = Pattern.compile("LAST_MODIFIED=([^\\n]+)");
         Matcher matcher = pattern.matcher(meetingStr);
@@ -134,5 +182,31 @@ public class MeetingUpdateObserver implements Observer {
             return matcher.group(1);
         }
         return null;
+    }
+    
+    private boolean extractDeleted(String meetingStr) {
+        Pattern pattern = Pattern.compile("DELETED=([^\\n]+)");
+        Matcher matcher = pattern.matcher(meetingStr);
+        if (matcher.find()) {
+            return Boolean.parseBoolean(matcher.group(1));
+        }
+        return false;
+    }
+    
+    private boolean isEmployeeInInvitedList(String employeeName, String meetingStr) {
+        String invitedListStr = "";
+        Pattern pattern = Pattern.compile("INVITED=([^\\n]+)");
+        Matcher matcher = pattern.matcher(meetingStr);
+        if (matcher.find()) {
+            invitedListStr = matcher.group(1);
+        }
+        
+        String[] invitedArray = invitedListStr.split(",");
+        for (String invited : invitedArray) {
+            if (invited.trim().equals(employeeName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

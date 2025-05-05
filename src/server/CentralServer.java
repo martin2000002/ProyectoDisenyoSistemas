@@ -55,9 +55,14 @@ public class CentralServer {
     
     private String extractSender(String message) {
         // Extraer el nombre del remitente del mensaje
-        // Por ahora, usamos un enfoque simple
         String[] lines = message.split("\n");
-        return lines[1].substring(10); // ORGANIZER=NombreDelEmpleado
+        for (String line : lines) {
+            if (line.startsWith("ORGANIZER=")) {
+                return line.substring("ORGANIZER=".length());
+            }
+        }
+        // Si no se encuentra el organizador, devolver un valor por defecto
+        return "Unknown";
     }
     
     public static void main(String[] args) {

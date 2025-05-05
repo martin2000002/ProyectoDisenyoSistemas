@@ -32,8 +32,68 @@ public class EmployeeClient {
         sendMeetingToCentralServer(meeting);
     }
     
-    public void modifyMeeting(Meeting meeting) {
+    public void modifyMeeting(Meeting meeting, List<String> previousInvitees) {
         meeting.setLastModified(LocalDateTime.now());
+        
+        // Verificar si se eliminaron invitados
+        List<String> currentInvitees = meeting.getInvitedEmployees();
+        List<String> removedInvitees = new ArrayList<>();
+        
+        // Identificar empleados que ya no están invitados
+        for (String prevInvitee : previousInvitees) {
+            if (!currentInvitees.contains(prevInvitee)) {
+                removedInvitees.add(prevInvitee);
+            }
+        }
+        
+        // Paso 1: Enviar notificaciones de eliminación a los empleados que ya no están invitados
+        if (!removedInvitees.isEmpty()) {
+            
+            // Crear una copia de la reunión marcada como eliminada
+            Meeting deletedMeeting = new Meeting(
+                meeting.getTopic(),
+                removedInvitees, // Solo incluir a los empleados eliminados
+                meeting.getOrganizer(),
+                meeting.getLocation(),
+                meeting.getStartTime(),
+                meeting.getEndTime()
+            );
+            
+            // Establecer el mismo UUID para que se identifique como la misma reunión
+            deletedMeeting.setUuid(meeting.getUuid());
+            deletedMeeting.markAsDeleted();
+            
+            // Asegurar que el timestamp sea más reciente
+            deletedMeeting.setLastModified(LocalDateTime.now());
+            
+            // Enviar la notificación de eliminación
+            sendMeetingToCentralServer(deletedMeeting);
+            
+            // Esperar un momento para asegurarse de que las eliminaciones se procesen primero
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // Ignorar
+            }
+        }
+        
+        // Paso 2: Enviar la reunión actualizada
+        // Esto actualizará la información para el organizador y los invitados actuales
+        meeting.setLastModified(LocalDateTime.now().plusSeconds(1)); // Asegurar que tenga prioridad
+        sendMeetingToCentralServer(meeting);
+    }
+    
+    public void deleteMeeting(Meeting meeting) {
+        // Marcar la reunión como eliminada mediante un campo especial
+        meeting.setLastModified(LocalDateTime.now());
+        meeting.markAsDeleted();
+        sendMeetingToCentralServer(meeting);
+    }
+    
+    // Método específico para cuando un invitado modifica solo el tema de una reunión
+    public void modifyMeetingAsTopic(Meeting meeting) {
+        meeting.setLastModified(LocalDateTime.now());
+        // No necesitamos comparar invitados, solo enviar la actualización del tema
         sendMeetingToCentralServer(meeting);
     }
     
@@ -46,7 +106,6 @@ public class EmployeeClient {
             out.flush();
             
             socket.close();
-            System.out.println("Meeting sent to Central Server: " + meeting.getTopic());
         } catch (IOException e) {
             System.err.println("Error sending meeting to Central Server: " + e.getMessage());
         }
@@ -70,7 +129,11 @@ public class EmployeeClient {
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty() && meetingStr.length() > 0) {
                     // End of a meeting, process it
-                    meetings.add(Meeting.fromStringFormat(meetingStr.toString()));
+                    Meeting meeting = Meeting.fromStringFormat(meetingStr.toString());
+                    // No cargamos reuniones que estén marcadas como eliminadas
+                    if (!meeting.isDeleted()) {
+                        meetings.add(meeting);
+                    }
                     meetingStr = new StringBuilder();
                 } else if (!line.trim().isEmpty()) {
                     // Add line to current meeting
@@ -80,7 +143,10 @@ public class EmployeeClient {
             
             // Process the last meeting if exists
             if (meetingStr.length() > 0) {
-                meetings.add(Meeting.fromStringFormat(meetingStr.toString()));
+                Meeting meeting = Meeting.fromStringFormat(meetingStr.toString());
+                if (!meeting.isDeleted()) {
+                    meetings.add(meeting);
+                }
             }
             
             reader.close();
@@ -133,9 +199,9 @@ public class EmployeeClient {
         
         System.out.println("Select Employees to Invite:");
         for (int i = 0; i < availableEmployees.size(); i++) {
-            System.out.println("     " + (i + 1) + ". " + availableEmployees.get(i));
+            System.out.println((i + 1) + ". " + availableEmployees.get(i));
         }
-        System.out.print("     Enter numbers of employees to invite (comma-separated, e.g., 1,3,4): ");
+        System.out.print("Enter numbers of employees to invite (comma-separated, e.g., 1,3,4): ");
         
         String input = scanner.nextLine();
         String[] selections = input.split(",");
@@ -157,6 +223,53 @@ public class EmployeeClient {
         return invitedEmployees;
     }
     
+    // Method to select meetings to delete
+    private List<Integer> selectMeetingsToDelete(Scanner scanner, List<Meeting> meetings) {
+        List<Integer> meetingsToDelete = new ArrayList<>();
+        
+        // Filtrar las reuniones para mostrar solo las que el empleado actual es organizador
+        List<Meeting> organizedMeetings = new ArrayList<>();
+        for (int i = 0; i < meetings.size(); i++) {
+            if (meetings.get(i).getOrganizer().equals(employeeName)) {
+                organizedMeetings.add(meetings.get(i));
+                System.out.println((organizedMeetings.size()) + ". " + meetings.get(i).getTopic() + 
+                                  " (" + meetings.get(i).getStartTime() + ")");
+            }
+        }
+        
+        if (organizedMeetings.isEmpty()) {
+            System.out.println("No meetings found where you are the organizer.");
+            return meetingsToDelete;
+        }
+        
+        System.out.print("Enter numbers of meetings to delete (comma-separated, e.g., 1,3,4): ");
+        
+        String input = scanner.nextLine();
+        String[] selections = input.split(",");
+        
+        for (String sel : selections) {
+            try {
+                int index = Integer.parseInt(sel.trim()) - 1;
+                if (index >= 0 && index < organizedMeetings.size()) {
+                    // Encontrar el índice original en la lista completa de meetings
+                    Meeting meetingToDelete = organizedMeetings.get(index);
+                    for (int i = 0; i < meetings.size(); i++) {
+                        if (meetings.get(i).getUuid().equals(meetingToDelete.getUuid())) {
+                            meetingsToDelete.add(i);
+                            break;
+                        }
+                    }
+                } else {
+                    System.out.println("Ignoring invalid selection: " + sel);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Ignoring invalid input: " + sel);
+            }
+        }
+        
+        return meetingsToDelete;
+    }
+    
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         String employeeName;
@@ -176,7 +289,8 @@ public class EmployeeClient {
             System.out.println("\n===== " + employeeName + "'s Meeting Manager =====");
             System.out.println("1. Create a new meeting");
             System.out.println("2. Modify an existing meeting");
-            System.out.println("3. Exit");
+            System.out.println("3. Delete your meetings");
+            System.out.println("4. Exit");
             System.out.print("Enter your choice: ");
             
             int choice;
@@ -228,9 +342,11 @@ public class EmployeeClient {
                 }
                 
                 System.out.println("\nAvailable meetings:");
+                // Mostrar todas las reuniones, indicando si eres organizador o invitado
                 for (int i = 0; i < meetings.size(); i++) {
                     Meeting meeting = meetings.get(i);
-                    System.out.println((i + 1) + ". " + meeting.getTopic() + 
+                    String roleLabel = meeting.getOrganizer().equals(employeeName) ? "[Organizer]" : "[Invited]";
+                    System.out.println((i + 1) + ". " + roleLabel + " " + meeting.getTopic() + 
                                       " (" + meeting.getStartTime() + ")");
                 }
                 
@@ -251,14 +367,24 @@ public class EmployeeClient {
                 }
                 
                 Meeting selectedMeeting = meetings.get(meetingIndex);
+                boolean isOrganizer = selectedMeeting.getOrganizer().equals(employeeName);
+                
                 System.out.println("\nModifying meeting: " + selectedMeeting.getTopic());
                 
-                System.out.println("What would you like to modify?");
-                System.out.println("1. Topic");
-                System.out.println("2. Invited employees");
-                System.out.println("3. Location");
-                System.out.println("4. Start time");
-                System.out.println("5. End time");
+                if (isOrganizer) {
+                    // Si eres el organizador, puedes modificar cualquier aspecto
+                    System.out.println("As the organizer, you can modify any aspect of this meeting:");
+                    System.out.println("1. Topic");
+                    System.out.println("2. Invited employees");
+                    System.out.println("3. Location");
+                    System.out.println("4. Start time");
+                    System.out.println("5. End time");
+                } else {
+                    // Si solo eres un invitado, solo puedes modificar el tema
+                    System.out.println("As an invited participant, you can only modify the topic:");
+                    System.out.println("1. Topic");
+                }
+                
                 System.out.print("Enter your choice: ");
                 
                 int modifyChoice;
@@ -271,35 +397,57 @@ public class EmployeeClient {
                     continue;
                 }
                 
+                // Verificar si la opción seleccionada es válida según el rol
+                if (!isOrganizer && modifyChoice != 1) {
+                    System.out.println("As an invited participant, you can only modify the topic of the meeting.");
+                    continue;
+                }
+                
+                // Guardar la lista actual de invitados para posible comparación si eres organizador
+                List<String> previousInvitees = selectedMeeting.getInvitedEmployees();
+                
                 switch (modifyChoice) {
                     case 1:
                         System.out.print("Enter new topic: ");
                         selectedMeeting.setTopic(scanner.nextLine());
                         break;
                     case 2:
-                        // Use new method to select invitees
-                        selectedMeeting.setInvitedEmployees(selectInvitedEmployees(scanner, employeeName));
+                        if (isOrganizer) {
+                            // Use new method to select invitees
+                            selectedMeeting.setInvitedEmployees(selectInvitedEmployees(scanner, employeeName));
+                            
+                            // Enviar actualización con la lista previa de invitados para comparación
+                            client.modifyMeeting(selectedMeeting, previousInvitees);
+                            System.out.println("Meeting modified successfully.");
+                            continue; // Saltar al inicio del bucle para evitar la llamada duplicada a modifyMeeting abajo
+                        }
                         break;
                     case 3:
-                        System.out.print("Enter new location: ");
-                        selectedMeeting.setLocation(scanner.nextLine());
+                        if (isOrganizer) {
+                            System.out.print("Enter new location: ");
+                            selectedMeeting.setLocation(scanner.nextLine());
+                        }
                         break;
                     case 4:
-                        System.out.print("Enter new start time (yyyy-MM-ddTHH:mm:ss): ");
-                        try {
-                            selectedMeeting.setStartTime(LocalDateTime.parse(scanner.nextLine(), formatter));
-                        } catch (Exception e) {
-                            System.out.println("Invalid date format. Please use yyyy-MM-ddTHH:mm:ss");
-                            continue;
+                        if (isOrganizer) {
+                            System.out.print("Enter new start time (yyyy-MM-ddTHH:mm:ss): ");
+                            try {
+                                selectedMeeting.setStartTime(LocalDateTime.parse(scanner.nextLine(), formatter));
+                            } catch (Exception e) {
+                                System.out.println("Invalid date format. Please use yyyy-MM-ddTHH:mm:ss");
+                                continue;
+                            }
                         }
                         break;
                     case 5:
-                        System.out.print("Enter new end time (yyyy-MM-ddTHH:mm:ss): ");
-                        try {
-                            selectedMeeting.setEndTime(LocalDateTime.parse(scanner.nextLine(), formatter));
-                        } catch (Exception e) {
-                            System.out.println("Invalid date format. Please use yyyy-MM-ddTHH:mm:ss");
-                            continue;
+                        if (isOrganizer) {
+                            System.out.print("Enter new end time (yyyy-MM-ddTHH:mm:ss): ");
+                            try {
+                                selectedMeeting.setEndTime(LocalDateTime.parse(scanner.nextLine(), formatter));
+                            } catch (Exception e) {
+                                System.out.println("Invalid date format. Please use yyyy-MM-ddTHH:mm:ss");
+                                continue;
+                            }
                         }
                         break;
                     default:
@@ -307,12 +455,47 @@ public class EmployeeClient {
                         continue;
                 }
                 
-                client.modifyMeeting(selectedMeeting);
+                // Para todas las modificaciones excepto la lista de invitados (que ya se procesó en el case 2)
+                if (isOrganizer) {
+                    client.modifyMeeting(selectedMeeting, previousInvitees);
+                } else {
+                    // Si eres invitado, simplemente actualizamos la reunión sin necesidad de gestionar invitados
+                    client.modifyMeetingAsTopic(selectedMeeting);
+                }
+                System.out.println("Meeting modified successfully.");
                 System.out.println("Meeting modified successfully.");
             } else if (choice == 3) {
+                // Eliminar reuniones
+                List<Meeting> meetings = client.loadMeetings();
+                
+                if (meetings.isEmpty()) {
+                    System.out.println("No meetings found to delete.");
+                    continue;
+                }
+                
+                System.out.println("\nYour meetings (as organizer):");
+                List<Integer> meetingsToDelete = client.selectMeetingsToDelete(scanner, meetings);
+                
+                if (meetingsToDelete.isEmpty()) {
+                    System.out.println("No meetings selected for deletion.");
+                    continue;
+                }
+                
+                System.out.println("Are you sure you want to delete these meetings? (y/n): ");
+                String confirmation = scanner.nextLine().trim().toLowerCase();
+                
+                if (confirmation.equals("y")) {
+                    for (int index : meetingsToDelete) {
+                        client.deleteMeeting(meetings.get(index));
+                        System.out.println("Deleted meeting: " + meetings.get(index).getTopic());
+                    }
+                } else {
+                    System.out.println("Deletion cancelled.");
+                }
+            } else if (choice == 4) {
                 break;
             } else {
-                System.out.println("Invalid choice. Please enter 1, 2, or 3.");
+                System.out.println("Invalid choice. Please enter 1, 2, 3, or 4.");
             }
         }
         
