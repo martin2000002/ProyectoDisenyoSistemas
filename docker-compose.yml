@@ -7,7 +7,8 @@ services:
       - "9090:9090"
     networks:
       - meeting-network
-    # Eliminamos el volumen que sobrescribía los archivos compilados
+    volumes:
+      - ./data:/app/data
 
   alice-server:
     build:
@@ -22,7 +23,8 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    # Eliminamos el volumen que sobrescribía los archivos compilados
+    volumes:
+      - ./data:/app/data
 
   bob-server:
     build:
@@ -37,7 +39,8 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    # Eliminamos el volumen que sobrescribía los archivos compilados
+    volumes:
+      - ./data:/app/data
 
   carol-server:
     build:
@@ -52,7 +55,8 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    # Eliminamos el volumen que sobrescribía los archivos compilados
+    volumes:
+      - ./data:/app/data
 
   david-server:
     build:
@@ -67,7 +71,8 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    # Eliminamos el volumen que sobrescribía los archivos compilados
+    volumes:
+      - ./data:/app/data
 
   eva-server:
     build:
@@ -82,7 +87,8 @@ services:
       - meeting-network
     depends_on:
       - central-server
-    # Eliminamos el volumen que sobrescribía los archivos compilados
+    volumes:
+      - ./data:/app/data
 
   client:
     build:
@@ -98,8 +104,7 @@ services:
       - david-server
       - eva-server
     volumes:
-      # Mantenemos este volumen para poder acceder a los archivos de reuniones
-      - ./:/app/data
+      - ./data:/app/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

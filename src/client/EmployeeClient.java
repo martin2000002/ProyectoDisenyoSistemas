@@ -56,18 +56,13 @@ public class EmployeeClient {
     private List<Meeting> loadMeetings() {
         List<Meeting> meetings = new ArrayList<>();
         try {
-            System.out.println("EmployeeClient: Trying to load meetings from: " + meetingsFilePath);
             File file = new File(meetingsFilePath);
-            System.out.println("EmployeeClient: File exists? " + file.exists());
-            System.out.println("EmployeeClient: File absolute path: " + file.getAbsolutePath());
-            System.out.println("EmployeeClient: File can read? " + file.canRead());
             
             BufferedReader reader = new BufferedReader(new FileReader(meetingsFilePath));
             StringBuilder meetingStr = new StringBuilder();
             String line;
             
             while ((line = reader.readLine()) != null) {
-                System.out.println("EmployeeClient: Read line: " + line);
                 if (line.trim().isEmpty() && meetingStr.length() > 0) {
                     // Fin de una reunión, procesarla
                     meetings.add(Meeting.fromStringFormat(meetingStr.toString()));
@@ -84,7 +79,6 @@ public class EmployeeClient {
             }
             
             reader.close();
-            System.out.println("EmployeeClient: Successfully loaded " + meetings.size() + " meetings");
         } catch (IOException e) {
             System.out.println("EmployeeClient: Error reading meetings file: " + e.getMessage());
             e.printStackTrace();
