@@ -50,9 +50,9 @@ Clases relevantes:
    ```bash
    docker exec -it proyectodisenyosistemas-client-1 java -cp ./classes client.EmployeeClient
    ```
-   En caso de haber cambiado el nombre de la caperta clonada usar:
+   En caso de haber cambiado el nombre de la caperta clonada, usar:
    ```bash
-   docker exec -it [nombre_carpeta]-client-1 java -cp ./classes client.EmployeeClient
+   docker exec -it [nuevo nombre de carpeta]-client-1 java -cp ./classes client.EmployeeClient
    ```
 
 ### Configuración de Empleados
