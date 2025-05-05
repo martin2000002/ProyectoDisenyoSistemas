@@ -46,9 +46,13 @@ Clases relevantes:
    docker-compose up
    ```
 
-4. Utilice el cliente con el siguiente comando:
+4. Utilice un empleado en una nueva terminal con el siguiente comando:
    ```bash
-   docker exec -it proyecto-client-1 java -cp ./classes client.EmployeeClient
+   docker exec -it proyectodisenyosistemas-client-1 java -cp ./classes client.EmployeeClient
+   ```
+   En caso de haber cambiado el nombre de la caperta clonada usar:
+   ```bash
+   docker exec -it [nombre_carpeta]-client-1 java -cp ./classes client.EmployeeClient
    ```
 
 ### Configuración de Empleados
@@ -80,7 +84,7 @@ Para modificar esta configuración, edite el archivo `employees.properties` y lu
 Para probar el sistema completo:
 
 1. Inicie los contenedores Docker como se describió anteriormente
-2. Conéctese al cliente y seleccione un empleado
+2. Ejecute un empleado
 3. Realice las siguientes operaciones:
    - Crear una nueva reunión invitando a otros empleados
    - Modificar una reunión existente como organizador
@@ -88,9 +92,3 @@ Para probar el sistema completo:
    - Eliminar una reunión como organizador (opcional es una especificación extra)
 4. Verifique que los archivos de reuniones en la carpeta `data/` se actualicen correctamente
 5. Pruebe la resolución de conflictos modificando la misma reunión desde diferentes clientes
-
-## Notas Adicionales
-
-- El sistema utiliza el mecanismo "last-write-wins" basado en timestamps para resolver conflictos
-- Las reuniones eliminadas se quitan completamente de los archivos de los invitados
-- Cada servidor de empleado opera en su propio puerto, como se define en `employees.properties`
