@@ -1,113 +1,113 @@
-services:
-  central-server:
-    build:
-      context: .
-      dockerfile: DockerfileCentral
-    ports:
-      - "9090:9090"
-    networks:
-      - meeting-network
-    volumes:
-      - ./data:/app/data
-
-  alice-white-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - EMPLOYEE_NAME=Alice_White
-        - EMPLOYEE_PORT=8081
-    ports:
-      - "8081:8081"
-    networks:
-      - meeting-network
-    depends_on:
-      - central-server
-    volumes:
-      - ./data:/app/data
-
-  bob-smith-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - EMPLOYEE_NAME=Bob_Smith
-        - EMPLOYEE_PORT=8082
-    ports:
-      - "8082:8082"
-    networks:
-      - meeting-network
-    depends_on:
-      - central-server
-    volumes:
-      - ./data:/app/data
-
-  carol-simpson-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - EMPLOYEE_NAME=Carol_Simpson
-        - EMPLOYEE_PORT=8083
-    ports:
-      - "8083:8083"
-    networks:
-      - meeting-network
-    depends_on:
-      - central-server
-    volumes:
-      - ./data:/app/data
-
-  david-black-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - EMPLOYEE_NAME=David_Black
-        - EMPLOYEE_PORT=8084
-    ports:
-      - "8084:8084"
-    networks:
-      - meeting-network
-    depends_on:
-      - central-server
-    volumes:
-      - ./data:/app/data
-
-  eva-brown-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - EMPLOYEE_NAME=Eva_Brown
-        - EMPLOYEE_PORT=8085
-    ports:
-      - "8085:8085"
-    networks:
-      - meeting-network
-    depends_on:
-      - central-server
-    volumes:
-      - ./data:/app/data
-
-  client:
-    build:
-      context: .
-      dockerfile: DockerfileClient
-    networks:
-      - meeting-network
-    depends_on:
-      - central-server
-      - alice-white-server
-      - bob-smith-server
-      - carol-simpson-server
-      - david-black-server
-      - eva-brown-server
-    volumes:
-      - ./data:/app/data
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-networks:
-  meeting-network:
-    driver: bridge
+services: 
+  central-server: 
+    build: 
+      context: . 
+      dockerfile: DockerfileCentral 
+    ports: 
+      - "9090:9090" 
+    networks: 
+      - meeting-network 
+    volumes: 
+      - ./data:/app/data 
+ 
+  alice-white-server: 
+    build: 
+      context: . 
+      dockerfile: Dockerfile 
+      args: 
+        - EMPLOYEE_NAME=Alice_White 
+        - EMPLOYEE_PORT=8081 
+    ports: 
+      - "8081:8081" 
+    networks: 
+      - meeting-network 
+    depends_on: 
+      - central-server 
+    volumes: 
+      - ./data:/app/data 
+ 
+  bob-smith-server: 
+    build: 
+      context: . 
+      dockerfile: Dockerfile 
+      args: 
+        - EMPLOYEE_NAME=Bob_Smith 
+        - EMPLOYEE_PORT=8082 
+    ports: 
+      - "8082:8082" 
+    networks: 
+      - meeting-network 
+    depends_on: 
+      - central-server 
+    volumes: 
+      - ./data:/app/data 
+ 
+  carol-simpson-server: 
+    build: 
+      context: . 
+      dockerfile: Dockerfile 
+      args: 
+        - EMPLOYEE_NAME=Carol_Simpson 
+        - EMPLOYEE_PORT=8083 
+    ports: 
+      - "8083:8083" 
+    networks: 
+      - meeting-network 
+    depends_on: 
+      - central-server 
+    volumes: 
+      - ./data:/app/data 
+ 
+  david-black-server: 
+    build: 
+      context: . 
+      dockerfile: Dockerfile 
+      args: 
+        - EMPLOYEE_NAME=David_Black 
+        - EMPLOYEE_PORT=8084 
+    ports: 
+      - "8084:8084" 
+    networks: 
+      - meeting-network 
+    depends_on: 
+      - central-server 
+    volumes: 
+      - ./data:/app/data 
+ 
+  eva-brown-server: 
+    build: 
+      context: . 
+      dockerfile: Dockerfile 
+      args: 
+        - EMPLOYEE_NAME=Eva_Brown 
+        - EMPLOYEE_PORT=8085 
+    ports: 
+      - "8085:8085" 
+    networks: 
+      - meeting-network 
+    depends_on: 
+      - central-server 
+    volumes: 
+      - ./data:/app/data 
+ 
+  client: 
+    build: 
+      context: . 
+      dockerfile: DockerfileClient 
+    networks: 
+      - meeting-network 
+    depends_on: 
+      - central-server 
+      - alice-white-server 
+      - bob-smith-server 
+      - carol-simpson-server 
+      - david-black-server 
+      - eva-brown-server 
+    volumes: 
+      - ./data:/app/data 
+    extra_hosts: 
+      - "host.docker.internal:host-gateway" 
+ 
+networks: 
+  meeting-network: 
+    driver: bridge 

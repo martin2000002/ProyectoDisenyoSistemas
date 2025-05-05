@@ -126,11 +126,11 @@ public class EmployeeClient {
             }
         }
         
-        System.out.println("\n===== Select Employees to Invite =====");
+        System.out.println("\nSelect Employees to Invite:");
         for (int i = 0; i < availableEmployees.size(); i++) {
-            System.out.println((i + 1) + ". " + availableEmployees.get(i));
+            System.out.println("     " + (i + 1) + ". " + availableEmployees.get(i));
         }
-        System.out.print("Enter numbers of employees to invite (comma-separated, e.g., 1,3,4): ");
+        System.out.print("     Enter numbers of employees to invite (comma-separated, e.g., 1,3,4): ");
         
         String input = scanner.nextLine();
         String[] selections = input.split(",");
