@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import model.Meeting;
+import util.PropertiesUtil;
 
 public class EmployeeClient {
     private String employeeName;
@@ -52,7 +53,6 @@ public class EmployeeClient {
     }
     
     // Método para cargar las reuniones existentes
-
     private List<Meeting> loadMeetings() {
         List<Meeting> meetings = new ArrayList<>();
         try {
@@ -86,15 +86,15 @@ public class EmployeeClient {
         return meetings;
     }
     
-    // Método para mostrar el menú de selección de empleado
+    // Método para mostrar el menú de selección de empleado dinámicamente desde el archivo properties
     private static String selectEmployee(Scanner scanner) {
+        List<String> employeeNames = PropertiesUtil.getEmployeeNames();
+        
         System.out.println("\n===== Employee Selection =====");
-        System.out.println("1. Alice_White");
-        System.out.println("2. Bob_Smith");
-        System.out.println("3. Carol_Simpson");
-        System.out.println("4. David_Black");
-        System.out.println("5. Eva_Brown");
-        System.out.print("Select an employee (1-5): ");
+        for (int i = 0; i < employeeNames.size(); i++) {
+            System.out.println((i + 1) + ". " + employeeNames.get(i));
+        }
+        System.out.print("Select an employee (1-" + employeeNames.size() + "): ");
         
         int choice;
         try {
@@ -102,19 +102,54 @@ public class EmployeeClient {
             scanner.nextLine(); // Consume newline
         } catch (Exception e) {
             scanner.nextLine(); // Consume invalid input
+            System.out.println("Invalid input. Please enter a number.");
             return selectEmployee(scanner); // Recursión para volver a solicitar input
         }
         
-        switch (choice) {
-            case 1: return "Alice_White";
-            case 2: return "Bob_Smith";
-            case 3: return "Carol_Simpson";
-            case 4: return "David_Black";
-            case 5: return "Eva_Brown";
-            default:
-                System.out.println("Invalid selection. Please try again.");
-                return selectEmployee(scanner); // Recursión para volver a solicitar input
+        if (choice >= 1 && choice <= employeeNames.size()) {
+            return employeeNames.get(choice - 1);
+        } else {
+            System.out.println("Invalid selection. Please try again.");
+            return selectEmployee(scanner); // Recursión para volver a solicitar input
         }
+    }
+    
+    // Método para seleccionar empleados invitados mostrando un menú
+    private static List<String> selectInvitedEmployees(Scanner scanner, String currentEmployee) {
+        List<String> employeeNames = PropertiesUtil.getEmployeeNames();
+        List<String> availableEmployees = new ArrayList<>();
+        
+        // Quitar el empleado actual de la lista de disponibles
+        for (String emp : employeeNames) {
+            if (!emp.equals(currentEmployee)) {
+                availableEmployees.add(emp);
+            }
+        }
+        
+        System.out.println("\n===== Select Employees to Invite =====");
+        for (int i = 0; i < availableEmployees.size(); i++) {
+            System.out.println((i + 1) + ". " + availableEmployees.get(i));
+        }
+        System.out.print("Enter numbers of employees to invite (comma-separated, e.g., 1,3,4): ");
+        
+        String input = scanner.nextLine();
+        String[] selections = input.split(",");
+        List<String> invitedEmployees = new ArrayList<>();
+        
+        for (String sel : selections) {
+            try {
+                int index = Integer.parseInt(sel.trim()) - 1;
+                if (index >= 0 && index < availableEmployees.size()) {
+                    invitedEmployees.add(availableEmployees.get(index));
+                } else {
+                    System.out.println("Ignoring invalid selection: " + sel);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Ignoring invalid input: " + sel);
+            }
+        }
+        
+        return invitedEmployees;
     }
     
     public static void main(String[] args) {
@@ -153,9 +188,8 @@ public class EmployeeClient {
                 System.out.print("Enter meeting topic: ");
                 String topic = scanner.nextLine();
                 
-                System.out.print("Enter invited employees (comma-separated): ");
-                String invitedInput = scanner.nextLine();
-                List<String> invitedEmployees = List.of(invitedInput.split(","));
+                // Uso del nuevo método para seleccionar invitados
+                List<String> invitedEmployees = selectInvitedEmployees(scanner, employeeName);
                 
                 System.out.print("Enter meeting location: ");
                 String location = scanner.nextLine();
@@ -237,9 +271,8 @@ public class EmployeeClient {
                         selectedMeeting.setTopic(scanner.nextLine());
                         break;
                     case 2:
-                        System.out.print("Enter new invited employees (comma-separated): ");
-                        String invitedInput = scanner.nextLine();
-                        selectedMeeting.setInvitedEmployees(List.of(invitedInput.split(",")));
+                        // Uso del nuevo método para seleccionar invitados
+                        selectedMeeting.setInvitedEmployees(selectInvitedEmployees(scanner, employeeName));
                         break;
                     case 3:
                         System.out.print("Enter new location: ");

@@ -10,7 +10,7 @@ services:
     volumes:
       - ./data:/app/data
 
-  alice-server:
+  alice-white-server:
     build:
       context: .
       dockerfile: Dockerfile
@@ -26,7 +26,7 @@ services:
     volumes:
       - ./data:/app/data
 
-  bob-server:
+  bob-smith-server:
     build:
       context: .
       dockerfile: Dockerfile
@@ -42,7 +42,7 @@ services:
     volumes:
       - ./data:/app/data
 
-  carol-server:
+  carol-simpson-server:
     build:
       context: .
       dockerfile: Dockerfile
@@ -58,7 +58,7 @@ services:
     volumes:
       - ./data:/app/data
 
-  david-server:
+  david-black-server:
     build:
       context: .
       dockerfile: Dockerfile
@@ -74,7 +74,7 @@ services:
     volumes:
       - ./data:/app/data
 
-  eva-server:
+  eva-brown-server:
     build:
       context: .
       dockerfile: Dockerfile
@@ -98,11 +98,11 @@ services:
       - meeting-network
     depends_on:
       - central-server
-      - alice-server
-      - bob-server
-      - carol-server
-      - david-server
-      - eva-server
+      - alice-white-server
+      - bob-smith-server
+      - carol-simpson-server
+      - david-black-server
+      - eva-brown-server
     volumes:
       - ./data:/app/data
     extra_hosts:

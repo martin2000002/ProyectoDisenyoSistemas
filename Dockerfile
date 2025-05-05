@@ -3,7 +3,7 @@ FROM openjdk:24
 WORKDIR /app
 COPY . .
 RUN mkdir -p classes && \
-    javac -d ./classes ./src/model/*.java ./src/observer/*.java ./src/mediator/*.java ./src/server/EmployeeServer.java
+    javac -d ./classes ./src/util/*.java ./src/model/*.java ./src/observer/*.java ./src/mediator/*.java ./src/server/EmployeeServer.java
 ARG EMPLOYEE_NAME
 ARG EMPLOYEE_PORT
 ENV EMPLOYEE_NAME=${EMPLOYEE_NAME}

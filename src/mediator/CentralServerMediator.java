@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import util.PropertiesUtil;
 
 public class CentralServerMediator implements Mediator {
     private Map<String, Integer> employeePorts = new HashMap<>();
@@ -17,26 +18,15 @@ public class CentralServerMediator implements Mediator {
     }
 
     private String getEmployeeHost(String employeeName) {
-        switch (employeeName) {
-            case "Alice_White": return "alice-server";
-            case "Bob_Smith": return "bob-server";
-            case "Carol_Simpson": return "carol-server";
-            case "David_Black": return "david-server";
-            case "Eva_Brown": return "eva-server";
-            default: return "localhost";
-        }
+        // Convertir el nombre del empleado a nombre de host de Docker
+        return employeeName.toLowerCase().replace('_', '-') + "-server";
     }
     
     private void loadEmployeeProperties() {
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream("employees.properties"));
-            for (String name : properties.stringPropertyNames()) {
-                int port = Integer.parseInt(properties.getProperty(name));
-                registerEmployee(name, port);
-            }
-        } catch (IOException e) {
-            System.err.println("Error loading properties: " + e.getMessage());
+        // Usar el PropertiesUtil para cargar los empleados
+        for (String employeeName : PropertiesUtil.getEmployeeNames()) {
+            int port = PropertiesUtil.getEmployeePort(employeeName);
+            registerEmployee(employeeName, port);
         }
     }
     
