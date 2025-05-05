@@ -7,4 +7,4 @@ RUN mkdir -p classes && \
     javac -d ./classes ./src/util/*.java ./src/model/*.java ./src/client/EmployeeClient.java
 EXPOSE 8080
 # Mantener el contenedor ejecutándose
-CMD ["sh", "-c", "echo 'Cliente listo para ser usado. Ejecuta: docker exec -it proyecto-client-1 java -cp ./classes client.EmployeeClient' && tail -f /dev/null"]
+CMD ["sh", "-c", "echo 'Cliente listo para ser usado. Ejecuta: docker exec -it proyectodisenyosistemas-client-1 java -cp ./classes client.EmployeeClient' && tail -f /dev/null"]

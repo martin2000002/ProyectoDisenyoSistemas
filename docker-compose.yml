@@ -69,10 +69,10 @@ services:
       - ./data:/app/data 
       - ./employees.properties:/app/employees.properties 
  
-  martin-montero-server: 
+  eva-brown-server: 
     image: martin2000002/meeting-employee-server:latest 
     environment: 
-      - EMPLOYEE_NAME=MARTIN_MONTERO 
+      - EMPLOYEE_NAME=Eva_Brown 
       - EMPLOYEE_PORT=8085 
     ports: 
       - "8085:8085" 
@@ -94,7 +94,7 @@ services:
       - bob-smith-server 
       - carol-simpson-server 
       - david-black-server 
-      - martin-montero-server 
+      - eva-brown-server 
     volumes: 
       - ./data:/app/data 
       - ./employees.properties:/app/employees.properties 
