@@ -5,8 +5,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Meeting {
+    private String uuid;
     private String topic;
     private List<String> invitedEmployees;
     private String organizer;
@@ -19,6 +21,7 @@ public class Meeting {
     
     public Meeting(String topic, List<String> invitedEmployees, String organizer, 
                    String location, LocalDateTime startTime, LocalDateTime endTime) {
+        this.uuid = UUID.randomUUID().toString();
         this.topic = topic;
         this.invitedEmployees = new ArrayList<>(invitedEmployees);
         this.organizer = organizer;
@@ -28,7 +31,24 @@ public class Meeting {
         this.lastModified = LocalDateTime.now();
     }
     
+    // Constructor with UUID for existing meetings
+    private Meeting(String uuid, String topic, List<String> invitedEmployees, String organizer, 
+                   String location, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime lastModified) {
+        this.uuid = uuid;
+        this.topic = topic;
+        this.invitedEmployees = new ArrayList<>(invitedEmployees);
+        this.organizer = organizer;
+        this.location = location;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.lastModified = lastModified;
+    }
+    
     // Getters
+    public String getUuid() {
+        return uuid;
+    }
+    
     public String getTopic() {
         return topic;
     }
@@ -92,7 +112,7 @@ public class Meeting {
         this.lastModified = lastModified;
     }
     
-    // Otras funciones de utilidad
+    // Other utility functions
     public void addInvitedEmployee(String employee) {
         this.invitedEmployees.add(employee);
         this.lastModified = LocalDateTime.now();
@@ -105,6 +125,7 @@ public class Meeting {
     
     public String toStringFormat() {
         StringBuilder sb = new StringBuilder();
+        sb.append("UUID=").append(uuid).append("\n");
         sb.append("TOPIC=").append(topic).append("\n");
         sb.append("ORGANIZER=").append(organizer).append("\n");
         sb.append("LOCATION=").append(location).append("\n");
@@ -123,28 +144,58 @@ public class Meeting {
     
     public static Meeting fromStringFormat(String meetingString) {
         String[] lines = meetingString.split("\n");
-        String topic = lines[0].substring(6);
-        String organizer = lines[1].substring(10);
-        String location = lines[2].substring(9);
-        LocalDateTime startTime = LocalDateTime.parse(lines[3].substring(6), formatter);
-        LocalDateTime endTime = LocalDateTime.parse(lines[4].substring(4), formatter);
-        LocalDateTime lastModified = LocalDateTime.parse(lines[5].substring(14), formatter);
+        String uuid = "";
+        String topic = "";
+        String organizer = "";
+        String location = "";
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
+        LocalDateTime lastModified = null;
+        String invitedStr = "";
         
-        String[] invitedArray = lines[6].substring(8).split(",");
-        List<String> invitedEmployees = new ArrayList<>();
-        for (String invited : invitedArray) {
-            invitedEmployees.add(invited);
+        for (String line : lines) {
+            if (line.startsWith("UUID=")) {
+                uuid = line.substring(5);
+            } else if (line.startsWith("TOPIC=")) {
+                topic = line.substring(6);
+            } else if (line.startsWith("ORGANIZER=")) {
+                organizer = line.substring(10);
+            } else if (line.startsWith("LOCATION=")) {
+                location = line.substring(9);
+            } else if (line.startsWith("START=")) {
+                startTime = LocalDateTime.parse(line.substring(6), formatter);
+            } else if (line.startsWith("END=")) {
+                endTime = LocalDateTime.parse(line.substring(4), formatter);
+            } else if (line.startsWith("LAST_MODIFIED=")) {
+                lastModified = LocalDateTime.parse(line.substring(14), formatter);
+            } else if (line.startsWith("INVITED=")) {
+                invitedStr = line.substring(8);
+            }
         }
         
-        Meeting meeting = new Meeting(topic, invitedEmployees, organizer, location, startTime, endTime);
-        meeting.setLastModified(lastModified);
-        return meeting;
+        String[] invitedArray = invitedStr.split(",");
+        List<String> invitedEmployees = new ArrayList<>();
+        for (String invited : invitedArray) {
+            if (!invited.trim().isEmpty()) {
+                invitedEmployees.add(invited.trim());
+            }
+        }
+        
+        // Handle old format meetings without UUID
+        if (uuid.isEmpty()) {
+            Meeting meeting = new Meeting(topic, invitedEmployees, organizer, location, startTime, endTime);
+            meeting.setLastModified(lastModified);
+            return meeting;
+        } else {
+            return new Meeting(uuid, topic, invitedEmployees, organizer, location, startTime, endTime, lastModified);
+        }
     }
     
     @Override
     public String toString() {
         return "Meeting{" +
-               "topic='" + topic + '\'' +
+               "uuid='" + uuid + '\'' +
+               ", topic='" + topic + '\'' +
                ", organizer='" + organizer + '\'' +
                ", location='" + location + '\'' +
                ", startTime=" + startTime +

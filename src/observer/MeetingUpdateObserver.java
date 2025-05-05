@@ -8,17 +8,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MeetingUpdateObserver implements Observer {
     private String employeeName;
     private String meetingsFilePath;
     
-    // En MeetingUpdateObserver.java:
     public MeetingUpdateObserver(String employeeName) {
         this.employeeName = employeeName;
         this.meetingsFilePath = "/app/data/" + employeeName + "_meetings.txt";
         
-        // Crear archivo si no existe
+        // Create file if it doesn't exist
         try {
             File file = new File(meetingsFilePath);
             if (!file.exists()) {
@@ -32,48 +33,71 @@ public class MeetingUpdateObserver implements Observer {
     
     @Override
     public void update(String meetingUpdate) {
-        // Actualizar el archivo de reuniones
+        // Update the meetings file
         try {
-            // Extraer el identificador de la reunión (tema)
-            String[] lines = meetingUpdate.split("\n");
-            String topic = lines[0].substring(6);
+            // Extract UUID from meeting
+            String uuid = extractUUID(meetingUpdate);
+            String topic = extractTopic(meetingUpdate);
             
-            // Leer el archivo actual
+            // Read the current file
             String currentContent = "";
             try {
                 currentContent = new String(Files.readAllBytes(Paths.get(meetingsFilePath)));
             } catch (IOException e) {
-                // Archivo vacío o no existe
+                // Empty file or doesn't exist
             }
             
-            // Verificar si la reunión ya existe
-            if (currentContent.contains("TOPIC=" + topic)) {
-                // Resolver conflicto (last-write-wins)
+            // Check if meeting exists by UUID
+            boolean meetingExists = false;
+            if (uuid != null) {
+                meetingExists = currentContent.contains("UUID=" + uuid);
+            }
+            
+            if (meetingExists) {
+                // Resolve conflict (last-write-wins)
                 DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-                LocalDateTime newLastModified = LocalDateTime.parse(lines[5].substring(14), formatter);
+                String lastModifiedStr = extractLastModified(meetingUpdate);
+                LocalDateTime newLastModified = null;
                 
-                // Por simplicidad, reemplazamos toda la reunión
-                // En una implementación real, se debería analizar mejor el conflicto
+                if (lastModifiedStr != null) {
+                    newLastModified = LocalDateTime.parse(lastModifiedStr, formatter);
+                }
                 
-                // Eliminar la reunión existente
+                // Replace the existing meeting with new version
                 String[] meetings = currentContent.split("\n\n");
                 StringBuilder updatedContent = new StringBuilder();
                 
                 for (String meeting : meetings) {
-                    if (!meeting.trim().isEmpty() && !meeting.contains("TOPIC=" + topic)) {
-                        updatedContent.append(meeting).append("\n\n");
+                    if (!meeting.trim().isEmpty()) {
+                        if (meeting.contains("UUID=" + uuid)) {
+                            // Check if we should update (last-write-wins)
+                            String existingLastModifiedStr = extractLastModified(meeting);
+                            if (existingLastModifiedStr != null && newLastModified != null) {
+                                LocalDateTime existingLastModified = LocalDateTime.parse(existingLastModifiedStr, formatter);
+                                
+                                // Only update if new version is newer or same time
+                                if (newLastModified.isAfter(existingLastModified) || 
+                                    newLastModified.isEqual(existingLastModified)) {
+                                    updatedContent.append(meetingUpdate).append("\n\n");
+                                } else {
+                                    updatedContent.append(meeting).append("\n\n");
+                                }
+                            } else {
+                                // If we can't determine, use the new version
+                                updatedContent.append(meetingUpdate).append("\n\n");
+                            }
+                        } else {
+                            updatedContent.append(meeting).append("\n\n");
+                        }
                     }
                 }
                 
-                // Agregar la nueva versión
-                updatedContent.append(meetingUpdate).append("\n\n");
-                
-                // Escribir de vuelta al archivo
+                // Write back to the file
                 FileWriter writer = new FileWriter(meetingsFilePath);
                 writer.write(updatedContent.toString());
                 writer.close();
             } else {
-                // Agregar la nueva reunión al final
+                // Add the new meeting at the end
                 FileWriter writer = new FileWriter(meetingsFilePath, true);
                 writer.write(meetingUpdate + "\n\n");
                 writer.close();
@@ -83,5 +107,32 @@ public class MeetingUpdateObserver implements Observer {
         } catch (IOException e) {
             System.err.println("Error updating meetings file: " + e.getMessage());
         }
+    }
+    
+    private String extractUUID(String meetingStr) {
+        Pattern pattern = Pattern.compile("UUID=([^\\n]+)");
+        Matcher matcher = pattern.matcher(meetingStr);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+    
+    private String extractTopic(String meetingStr) {
+        Pattern pattern = Pattern.compile("TOPIC=([^\\n]+)");
+        Matcher matcher = pattern.matcher(meetingStr);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+    
+    private String extractLastModified(String meetingStr) {
+        Pattern pattern = Pattern.compile("LAST_MODIFIED=([^\\n]+)");
+        Matcher matcher = pattern.matcher(meetingStr);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
     }
 }

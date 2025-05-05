@@ -52,11 +52,16 @@ public class EmployeeClient {
         }
     }
     
-    // Método para cargar las reuniones existentes
+    // Method to load existing meetings
     private List<Meeting> loadMeetings() {
         List<Meeting> meetings = new ArrayList<>();
         try {
             File file = new File(meetingsFilePath);
+            
+            if (!file.exists()) {
+                System.out.println("No meetings file found for " + employeeName);
+                return meetings;
+            }
             
             BufferedReader reader = new BufferedReader(new FileReader(meetingsFilePath));
             StringBuilder meetingStr = new StringBuilder();
@@ -64,16 +69,16 @@ public class EmployeeClient {
             
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty() && meetingStr.length() > 0) {
-                    // Fin de una reunión, procesarla
+                    // End of a meeting, process it
                     meetings.add(Meeting.fromStringFormat(meetingStr.toString()));
                     meetingStr = new StringBuilder();
                 } else if (!line.trim().isEmpty()) {
-                    // Añadir línea a la reunión actual
+                    // Add line to current meeting
                     meetingStr.append(line).append("\n");
                 }
             }
             
-            // Procesar la última reunión si existe
+            // Process the last meeting if exists
             if (meetingStr.length() > 0) {
                 meetings.add(Meeting.fromStringFormat(meetingStr.toString()));
             }
@@ -86,7 +91,7 @@ public class EmployeeClient {
         return meetings;
     }
     
-    // Método para mostrar el menú de selección de empleado dinámicamente desde el archivo properties
+    // Method to show employee selection menu dynamically from properties file
     private static String selectEmployee(Scanner scanner) {
         List<String> employeeNames = PropertiesUtil.getEmployeeNames();
         
@@ -103,30 +108,30 @@ public class EmployeeClient {
         } catch (Exception e) {
             scanner.nextLine(); // Consume invalid input
             System.out.println("Invalid input. Please enter a number.");
-            return selectEmployee(scanner); // Recursión para volver a solicitar input
+            return selectEmployee(scanner); // Recursion to request input again
         }
         
         if (choice >= 1 && choice <= employeeNames.size()) {
             return employeeNames.get(choice - 1);
         } else {
             System.out.println("Invalid selection. Please try again.");
-            return selectEmployee(scanner); // Recursión para volver a solicitar input
+            return selectEmployee(scanner); // Recursion to request input again
         }
     }
     
-    // Método para seleccionar empleados invitados mostrando un menú
+    // Method to select invited employees by showing a menu
     private static List<String> selectInvitedEmployees(Scanner scanner, String currentEmployee) {
         List<String> employeeNames = PropertiesUtil.getEmployeeNames();
         List<String> availableEmployees = new ArrayList<>();
         
-        // Quitar el empleado actual de la lista de disponibles
+        // Remove current employee from available list
         for (String emp : employeeNames) {
             if (!emp.equals(currentEmployee)) {
                 availableEmployees.add(emp);
             }
         }
         
-        System.out.println("\nSelect Employees to Invite:");
+        System.out.println("Select Employees to Invite:");
         for (int i = 0; i < availableEmployees.size(); i++) {
             System.out.println("     " + (i + 1) + ". " + availableEmployees.get(i));
         }
@@ -157,10 +162,10 @@ public class EmployeeClient {
         String employeeName;
         
         if (args.length >= 1) {
-            // Si se proporciona un argumento, usarlo como nombre de empleado
+            // If argument provided, use it as employee name
             employeeName = args[0];
         } else {
-            // De lo contrario, mostrar menú de selección
+            // Otherwise, show selection menu
             employeeName = selectEmployee(scanner);
         }
         
@@ -188,7 +193,7 @@ public class EmployeeClient {
                 System.out.print("Enter meeting topic: ");
                 String topic = scanner.nextLine();
                 
-                // Uso del nuevo método para seleccionar invitados
+                // Use new method to select invitees
                 List<String> invitedEmployees = selectInvitedEmployees(scanner, employeeName);
                 
                 System.out.print("Enter meeting location: ");
@@ -214,7 +219,7 @@ public class EmployeeClient {
                 
                 client.createMeeting(topic, invitedEmployees, location, startTime, endTime);
             } else if (choice == 2) {
-                // Modificar una reunión existente
+                // Modify an existing meeting
                 List<Meeting> meetings = client.loadMeetings();
                 
                 if (meetings.isEmpty()) {
@@ -224,8 +229,9 @@ public class EmployeeClient {
                 
                 System.out.println("\nAvailable meetings:");
                 for (int i = 0; i < meetings.size(); i++) {
-                    System.out.println((i + 1) + ". " + meetings.get(i).getTopic() + 
-                                      " (" + meetings.get(i).getStartTime() + ")");
+                    Meeting meeting = meetings.get(i);
+                    System.out.println((i + 1) + ". " + meeting.getTopic() + 
+                                      " (" + meeting.getStartTime() + ")");
                 }
                 
                 System.out.print("Select a meeting to modify (1-" + meetings.size() + "): ");
@@ -271,7 +277,7 @@ public class EmployeeClient {
                         selectedMeeting.setTopic(scanner.nextLine());
                         break;
                     case 2:
-                        // Uso del nuevo método para seleccionar invitados
+                        // Use new method to select invitees
                         selectedMeeting.setInvitedEmployees(selectInvitedEmployees(scanner, employeeName));
                         break;
                     case 3:
