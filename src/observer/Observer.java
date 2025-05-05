@@ -1,4 +1,3 @@
-// src/observer/Observer.java
 package observer;
 
 public interface Observer {

@@ -1,4 +1,3 @@
-// src/observer/Subject.java
 package observer;
 
 public interface Subject {

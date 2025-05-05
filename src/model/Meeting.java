@@ -1,4 +1,3 @@
-// src/model/Meeting.java
 package model;
 
 import java.time.LocalDateTime;
@@ -16,7 +15,7 @@ public class Meeting {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private LocalDateTime lastModified;
-    private boolean deleted = false; // Nuevo campo para indicar si la reunión está eliminada
+    private boolean deleted = false;
     
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     

@@ -1,13 +1,10 @@
-// src/mediator/CentralServerMediator.java
 package mediator;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import util.PropertiesUtil;
 
 public class CentralServerMediator implements Mediator {

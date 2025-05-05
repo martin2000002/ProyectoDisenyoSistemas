@@ -1,4 +1,3 @@
-// src/util/PropertiesUtil.java
 package util;
 
 import java.io.FileInputStream;

@@ -1,4 +1,3 @@
-// src/server/CentralServer.java
 package server;
 
 import java.io.BufferedReader;

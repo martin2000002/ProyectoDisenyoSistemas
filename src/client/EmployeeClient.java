@@ -1,4 +1,3 @@
-// src/client/EmployeeClient.java
 package client;
 
 import java.io.BufferedReader;
@@ -69,17 +68,9 @@ public class EmployeeClient {
             // Enviar la notificación de eliminación
             sendMeetingToCentralServer(deletedMeeting);
             
-            // Esperar un momento para asegurarse de que las eliminaciones se procesen primero
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                // Ignorar
-            }
         }
         
-        // Paso 2: Enviar la reunión actualizada
-        // Esto actualizará la información para el organizador y los invitados actuales
-        meeting.setLastModified(LocalDateTime.now().plusSeconds(1)); // Asegurar que tenga prioridad
+        meeting.setLastModified(LocalDateTime.now().plusSeconds(1));
         sendMeetingToCentralServer(meeting);
     }
     
@@ -170,9 +161,9 @@ public class EmployeeClient {
         int choice;
         try {
             choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
         } catch (Exception e) {
-            scanner.nextLine(); // Consume invalid input
+            scanner.nextLine();
             System.out.println("Invalid input. Please enter a number.");
             return selectEmployee(scanner); // Recursion to request input again
         }
@@ -296,10 +287,10 @@ public class EmployeeClient {
             int choice;
             try {
                 choice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                scanner.nextLine();
             } catch (Exception e) {
                 System.out.println("Invalid input. Please enter a number.");
-                scanner.nextLine(); // Consume invalid input
+                scanner.nextLine();
                 continue;
             }
             
@@ -354,10 +345,10 @@ public class EmployeeClient {
                 int meetingIndex;
                 try {
                     meetingIndex = scanner.nextInt() - 1;
-                    scanner.nextLine(); // Consume newline
+                    scanner.nextLine();
                 } catch (Exception e) {
                     System.out.println("Invalid input. Please enter a number.");
-                    scanner.nextLine(); // Consume invalid input
+                    scanner.nextLine();
                     continue;
                 }
                 
@@ -372,7 +363,6 @@ public class EmployeeClient {
                 System.out.println("\nModifying meeting: " + selectedMeeting.getTopic());
                 
                 if (isOrganizer) {
-                    // Si eres el organizador, puedes modificar cualquier aspecto
                     System.out.println("As the organizer, you can modify any aspect of this meeting:");
                     System.out.println("1. Topic");
                     System.out.println("2. Invited employees");
@@ -380,7 +370,6 @@ public class EmployeeClient {
                     System.out.println("4. Start time");
                     System.out.println("5. End time");
                 } else {
-                    // Si solo eres un invitado, solo puedes modificar el tema
                     System.out.println("As an invited participant, you can only modify the topic:");
                     System.out.println("1. Topic");
                 }
@@ -390,10 +379,10 @@ public class EmployeeClient {
                 int modifyChoice;
                 try {
                     modifyChoice = scanner.nextInt();
-                    scanner.nextLine(); // Consume newline
+                    scanner.nextLine();
                 } catch (Exception e) {
                     System.out.println("Invalid input. Please enter a number.");
-                    scanner.nextLine(); // Consume invalid input
+                    scanner.nextLine();
                     continue;
                 }
                 
@@ -459,7 +448,6 @@ public class EmployeeClient {
                 if (isOrganizer) {
                     client.modifyMeeting(selectedMeeting, previousInvitees);
                 } else {
-                    // Si eres invitado, simplemente actualizamos la reunión sin necesidad de gestionar invitados
                     client.modifyMeetingAsTopic(selectedMeeting);
                 }
                 System.out.println("Meeting modified successfully.");

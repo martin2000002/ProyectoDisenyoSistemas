@@ -1,4 +1,3 @@
-// src/observer/MeetingUpdateObserver.java
 package observer;
 
 import java.io.File;
@@ -80,11 +79,6 @@ public class MeetingUpdateObserver implements Observer {
                                 if (newLastModified.isAfter(existingLastModified) || 
                                     newLastModified.isEqual(existingLastModified)) {
                                     
-                                    // Si la reunión está marcada como eliminada:
-                                // - Si el empleado actual es uno de los invitados en el mensaje de eliminación,
-                                //   entonces eliminar la reunión de su archivo
-                                // - Si el empleado actual es el organizador, NO eliminar la reunión,
-                                //   pues recibirá la versión actualizada después
                                 String organizer = extractOrganizer(meetingUpdate);
                                 boolean isInvitedInDeleteMessage = isEmployeeInInvitedList(employeeName, meetingUpdate);
                                 
@@ -107,11 +101,9 @@ public class MeetingUpdateObserver implements Observer {
                                     updatedContent.append(meeting).append("\n\n");
                                 }
                             } else {
-                                // If we can't determine, use the new version
-                                // Pero verificar si está eliminada y el empleado actual no es el organizador
+                                // Verificar si está eliminada y el empleado actual no es el organizador
                                 String organizer = extractOrganizer(meetingUpdate);
                                 if (isDeleted && !employeeName.equals(organizer)) {
-                                    // No hacemos nada (no añadimos la reunión eliminada al contenido)
                                     System.out.println("Removing deleted meeting: " + topic + " from " + employeeName + "'s file");
                                 } else {
                                     updatedContent.append(meetingUpdate).append("\n\n");

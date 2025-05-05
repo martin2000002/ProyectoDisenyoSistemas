@@ -1,4 +1,3 @@
-// src/mediator/Mediator.java
 package mediator;
 
 public interface Mediator {

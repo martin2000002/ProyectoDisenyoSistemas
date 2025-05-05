@@ -1,4 +1,3 @@
-// src/server/EmployeeServer.java
 package server;
 
 import java.io.BufferedReader;
