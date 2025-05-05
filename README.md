@@ -69,7 +69,7 @@ Los servidores de empleados implementan el patrón Observer, donde:
    docker-compose up
    ```
 
-4. **Utilice la aplicación cliente:**
+4. **Utilice la aplicación cliente en otro terminal:**
    ```bash
    docker exec -it proyectodisenyosistemas-client-1 java -cp ./classes client.EmployeeClient
    ```
@@ -128,7 +128,7 @@ Para modificar esta configuración:
 Para verificar el funcionamiento completo del sistema:
 
 1. **Inicie los contenedores Docker** como se describió anteriormente
-2. **Ejecute un cliente** para un empleado:
+2. **Ejecute un cliente** para un empleado en otros terminales:
    ```bash
    docker exec -it proyectodisenyosistemas-client-1 java -cp ./classes client.EmployeeClient
    ```
