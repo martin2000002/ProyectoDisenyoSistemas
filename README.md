@@ -81,7 +81,7 @@ Los servidores de empleados implementan el patrón Observer, donde:
      ```
    - Para ver los logs del servidor de un empleado:
      ```bash
-     docker logs -f proyectodisenyosistemas-[nombre-empleado]-server-1
+     docker logs -f proyectodisenyosistemas-[nombre-apellido]-server-1
      ```
      Ejemplo:
      ```bash
