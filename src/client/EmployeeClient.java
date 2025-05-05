@@ -89,11 +89,11 @@ public class EmployeeClient {
     // Método para mostrar el menú de selección de empleado
     private static String selectEmployee(Scanner scanner) {
         System.out.println("\n===== Employee Selection =====");
-        System.out.println("1. Alice White");
-        System.out.println("2. Bob Smith");
-        System.out.println("3. Carol Simpson");
-        System.out.println("4. David Black");
-        System.out.println("5. Eva Brown");
+        System.out.println("1. Alice_White");
+        System.out.println("2. Bob_Smith");
+        System.out.println("3. Carol_Simpson");
+        System.out.println("4. David_Black");
+        System.out.println("5. Eva_Brown");
         System.out.print("Select an employee (1-5): ");
         
         int choice;
