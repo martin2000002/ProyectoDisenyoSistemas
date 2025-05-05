@@ -37,9 +37,8 @@ Clases relevantes:
    ```
 
 2. Configure los empleados a su necesidad:
-   ```
    Mire la sección de configuración de empleados a continuación
-   ```
+   
 
 3. Ejecute los contenedores:
    ```bash
