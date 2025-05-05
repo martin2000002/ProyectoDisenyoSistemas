@@ -3,6 +3,7 @@
 # Rutas relativas desde la carpeta generate_compose
 PROPERTIES_FILE="../employees.properties"
 OUTPUT_FILE="../docker-compose.yml"
+DATA_DIR="../data"
 DOCKER_HUB_USERNAME="martin2000002"
 
 # Verificar que el archivo de propiedades existe
@@ -88,3 +89,17 @@ networks:
 EOF
 
 echo "Docker Compose file generado exitosamente en $OUTPUT_FILE"
+
+# Eliminar todos los archivos en el directorio data
+echo "Eliminando archivos de la carpeta data..."
+if [ -d "$DATA_DIR" ]; then
+    # Crear el directorio si no existe
+    mkdir -p "$DATA_DIR"
+    # Eliminar todo su contenido
+    rm -f "$DATA_DIR"/*
+    echo "Archivos eliminados correctamente de $DATA_DIR"
+else
+    # Crear el directorio si no existe
+    mkdir -p "$DATA_DIR"
+    echo "El directorio $DATA_DIR se ha creado (estaba vacío)"
+fi

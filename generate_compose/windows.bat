@@ -4,6 +4,7 @@ setlocal enabledelayedexpansion
 :: Rutas relativas desde la carpeta generate_compose
 set PROPERTIES_FILE=..\employees.properties
 set OUTPUT_FILE=..\docker-compose.yml
+set DATA_DIR=..\data
 set DOCKER_HUB_USERNAME=martin2000002
 
 :: Verificar que el archivo de propiedades existe
@@ -86,3 +87,13 @@ echo   meeting-network: >> %OUTPUT_FILE%
 echo     driver: bridge >> %OUTPUT_FILE%
 
 echo Docker Compose file generado exitosamente en %OUTPUT_FILE%
+
+:: Eliminar todos los archivos en el directorio data
+echo Eliminando archivos de la carpeta data...
+if not exist %DATA_DIR% (
+    mkdir %DATA_DIR%
+    echo El directorio %DATA_DIR% se ha creado (estaba vacio)
+) else (
+    del /Q %DATA_DIR%\*
+    echo Archivos eliminados correctamente de %DATA_DIR%
+)

@@ -30,7 +30,7 @@ Clases relevantes:
 
 ### Pasos para la Ejecución
 
-1. Clone el repositorio:
+1. Clone el repositorio (para obtener el compose.yml y la carpeta 'data/' donde se guardarán las reuniones):
    ```bash
    git clone https://github.com/martin2000002/ProyectoDisenyoSistemas.git
    cd ProyectoDisenyoSistemas
@@ -50,10 +50,19 @@ Clases relevantes:
    ```bash
    docker exec -it proyectodisenyosistemas-client-1 java -cp ./classes client.EmployeeClient
    ```
-   En caso de haber cambiado el nombre de la caperta clonada, usar:
+
+5. Si se quiere ver los logs de un servidor en especifico, usar la app de docker o ejecutar:
+   Para el servidor central:
    ```bash
-   docker exec -it [nuevo nombre de carpeta]-client-1 java -cp ./classes client.EmployeeClient
+   docker logs -f proyectodisenyosistemas-central-server-1
    ```
+
+   Para el servidor de un empleado:
+   ```bash
+   docker logs -f proyectodisenyosistemas-[nombre del empleado]-[apellido del empleado]-server-1
+   ```
+
+Nota: Si se cambia el nombre de la carpeta clonada, reemplazar `proyectodisenyosistemas` por el nuevo nombre de carpeta en todos los comandos.
 
 ### Configuración de Empleados
 
