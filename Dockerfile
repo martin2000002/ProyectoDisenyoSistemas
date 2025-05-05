@@ -1,5 +1,5 @@
 # Dockerfile para Servidores de Empleados
-FROM openjdk:24
+FROM --platform=$BUILDPLATFORM openjdk:24
 WORKDIR /app
 COPY . .
 RUN mkdir -p classes && \

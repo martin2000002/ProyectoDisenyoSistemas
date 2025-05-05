@@ -1,5 +1,5 @@
 # DockerfileCentral para el Servidor Central
-FROM openjdk:24
+FROM --platform=$BUILDPLATFORM openjdk:24
 WORKDIR /app
 COPY ./src ./src
 COPY ./employees.properties .
