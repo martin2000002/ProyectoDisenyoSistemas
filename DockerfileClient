@@ -6,4 +6,4 @@ COPY ./employees.properties .
 RUN mkdir -p classes && \
     javac -d ./classes ./src/util/*.java ./src/model/*.java ./src/client/EmployeeClient.java
 EXPOSE 8080
-CMD ["sh", "-c", "CONTAINER_NAME=$(hostname) && echo 'Cliente listo para ser usado. Ejecuta el siguiente comando en otra terminal: docker exec -it '$CONTAINER_NAME' java -cp ./classes client.EmployeeClient' && tail -f /dev/null"]
+CMD ["sh", "-c", "CONTAINER_NAME=$(hostname) && echo 'Cliente listo para ser usado. Ejecuta el siguiente comando en otra terminal: docker exec -it proyectodisenyosistemas-client-1 java -cp ./classes client.EmployeeClient' && tail -f /dev/null"]
