@@ -4,6 +4,7 @@ setlocal enabledelayedexpansion
 :: Rutas relativas desde la carpeta generate_compose
 set PROPERTIES_FILE=..\employees.properties
 set OUTPUT_FILE=..\docker-compose.yml
+set DOCKER_HUB_USERNAME=martin2000002
 
 :: Verificar que el archivo de propiedades existe
 if not exist %PROPERTIES_FILE% (
@@ -14,15 +15,14 @@ if not exist %PROPERTIES_FILE% (
 :: Encabezado del archivo
 echo services: > %OUTPUT_FILE%
 echo   central-server: >> %OUTPUT_FILE%
-echo     build: >> %OUTPUT_FILE%
-echo       context: . >> %OUTPUT_FILE%
-echo       dockerfile: DockerfileCentral >> %OUTPUT_FILE%
+echo     image: %DOCKER_HUB_USERNAME%/meeting-central-server:latest >> %OUTPUT_FILE%
 echo     ports: >> %OUTPUT_FILE%
 echo       - "9090:9090" >> %OUTPUT_FILE%
 echo     networks: >> %OUTPUT_FILE%
 echo       - meeting-network >> %OUTPUT_FILE%
 echo     volumes: >> %OUTPUT_FILE%
 echo       - ./data:/app/data >> %OUTPUT_FILE%
+echo       - ./employees.properties:/app/employees.properties >> %OUTPUT_FILE%
 echo. >> %OUTPUT_FILE%
 
 :: Procesamiento del archivo de propiedades
@@ -38,12 +38,10 @@ for /f "tokens=1,2 delims==" %%a in (%PROPERTIES_FILE%) do (
     
     :: Escribir la configuración del servidor de empleado
     echo   !CONTAINER_NAME!-server: >> %OUTPUT_FILE%
-    echo     build: >> %OUTPUT_FILE%
-    echo       context: . >> %OUTPUT_FILE%
-    echo       dockerfile: Dockerfile >> %OUTPUT_FILE%
-    echo       args: >> %OUTPUT_FILE%
-    echo         - EMPLOYEE_NAME=!EMPLOYEE_NAME! >> %OUTPUT_FILE%
-    echo         - EMPLOYEE_PORT=!EMPLOYEE_PORT! >> %OUTPUT_FILE%
+    echo     image: %DOCKER_HUB_USERNAME%/meeting-employee-server:latest >> %OUTPUT_FILE%
+    echo     environment: >> %OUTPUT_FILE%
+    echo       - EMPLOYEE_NAME=!EMPLOYEE_NAME! >> %OUTPUT_FILE%
+    echo       - EMPLOYEE_PORT=!EMPLOYEE_PORT! >> %OUTPUT_FILE%
     echo     ports: >> %OUTPUT_FILE%
     echo       - "!EMPLOYEE_PORT!:!EMPLOYEE_PORT!" >> %OUTPUT_FILE%
     echo     networks: >> %OUTPUT_FILE%
@@ -52,14 +50,13 @@ for /f "tokens=1,2 delims==" %%a in (%PROPERTIES_FILE%) do (
     echo       - central-server >> %OUTPUT_FILE%
     echo     volumes: >> %OUTPUT_FILE%
     echo       - ./data:/app/data >> %OUTPUT_FILE%
+    echo       - ./employees.properties:/app/employees.properties >> %OUTPUT_FILE%
     echo. >> %OUTPUT_FILE%
 )
 
 :: Cliente
 echo   client: >> %OUTPUT_FILE%
-echo     build: >> %OUTPUT_FILE%
-echo       context: . >> %OUTPUT_FILE%
-echo       dockerfile: DockerfileClient >> %OUTPUT_FILE%
+echo     image: %DOCKER_HUB_USERNAME%/meeting-client:latest >> %OUTPUT_FILE%
 echo     networks: >> %OUTPUT_FILE%
 echo       - meeting-network >> %OUTPUT_FILE%
 echo     depends_on: >> %OUTPUT_FILE%
@@ -78,6 +75,7 @@ for /f "tokens=1 delims==" %%a in (%PROPERTIES_FILE%) do (
 :: Continuar con la configuración del cliente
 echo     volumes: >> %OUTPUT_FILE%
 echo       - ./data:/app/data >> %OUTPUT_FILE%
+echo       - ./employees.properties:/app/employees.properties >> %OUTPUT_FILE%
 echo     extra_hosts: >> %OUTPUT_FILE%
 echo       - "host.docker.internal:host-gateway" >> %OUTPUT_FILE%
 echo. >> %OUTPUT_FILE%

@@ -2,29 +2,6 @@
 
 Este proyecto implementa un sistema de gestión de reuniones entre empleados de una compañía, desarrollado en Java, con arquitectura distribuida basada en sockets y ejecutándose en contenedores Docker.
 
-## Arquitectura del Sistema
-
-El sistema consta de tres componentes principales:
-
-### 1. Aplicación asociada a cada empleado(a)
-Cada empleado tiene una aplicación cliente que le permite:
-- Crear reuniones nuevas
-- Modificar reuniones (con permisos diferenciados según su rol)
-- Eliminar reuniones (solo como organizador)
-- Comunicar los cambios al servidor central
-
-### 2. Servidor asociado a cada empleado(a)
-Cada empleado tiene un servidor de socket que:
-- Se ejecuta continuamente escuchando mensajes del servidor central
-- Interpreta los mensajes recibidos y actualiza el archivo de reuniones
-- Resuelve conflictos de modificación mediante el mecanismo "last-write-wins"
-
-### 3. Servidor Central
-Actúa como mediador entre los servidores de los empleados:
-- Lee un archivo de propiedades que mapea nombres de empleados a puertos
-- Recibe mensajes sobre creación, modificación o eliminación de reuniones
-- Distribuye las actualizaciones a todos los empleados involucrados
-
 ## Patrones de Diseño Implementados
 
 ### Patrón Mediator
@@ -50,22 +27,26 @@ Clases relevantes:
 ### Requisitos Previos
 - Docker y Docker Compose
 - Git para clonar el repositorio
-- Java 24 (opcional para desarrollo)
 
 ### Pasos para la Ejecución
 
 1. Clone el repositorio:
    ```bash
-   git clone https://github.com/usuario/proyecto-reuniones.git
-   cd proyecto-reuniones
+   git clone https://github.com/martin2000002/ProyectoDisenyoSistemas.git
+   cd ProyectoDisenyoSistemas
    ```
 
-2. Construya y ejecute los contenedores:
+2. Configure los empleados a su necesidad:
+   ```
+   Mire la sección de configuración de empleados a continuación
+   ```
+
+3. Ejecute los contenedores:
    ```bash
-   docker compose up --build
+   docker-compose up
    ```
 
-3. Para utilizar el cliente:
+4. Utilice el cliente con el siguiente comando:
    ```bash
    docker exec -it proyecto-client-1 java -cp ./classes client.EmployeeClient
    ```
@@ -94,26 +75,6 @@ Para modificar esta configuración, edite el archivo `employees.properties` y lu
   ./macos.sh
   ```
 
-## Estructura de Directorios
-
-```
-.
-├── data/                      # Archivos de reuniones de los empleados
-├── src/                       # Código fuente
-│   ├── client/                # Cliente de empleado
-│   ├── mediator/              # Implementación del patrón Mediator
-│   ├── model/                 # Modelos de datos
-│   ├── observer/              # Implementación del patrón Observer
-│   ├── server/                # Servidores central y de empleados
-│   └── util/                  # Clases utilitarias
-├── Dockerfile                 # Dockerfile para servidores de empleados
-├── DockerfileCentral          # Dockerfile para el servidor central
-├── DockerfileClient           # Dockerfile para el cliente
-├── docker-compose.yml         # Configuración de Docker Compose
-├── employees.properties       # Configuración de empleados y puertos
-└── generate_compose/          # Scripts para generar docker-compose.yml
-```
-
 ## Pruebas del Sistema
 
 Para probar el sistema completo:
@@ -124,7 +85,7 @@ Para probar el sistema completo:
    - Crear una nueva reunión invitando a otros empleados
    - Modificar una reunión existente como organizador
    - Modificar una reunión como invitado (solo el tema)
-   - Eliminar una reunión como organizador
+   - Eliminar una reunión como organizador (opcional es una especificación extra)
 4. Verifique que los archivos de reuniones en la carpeta `data/` se actualicen correctamente
 5. Pruebe la resolución de conflictos modificando la misma reunión desde diferentes clientes
 

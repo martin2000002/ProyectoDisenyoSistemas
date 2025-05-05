@@ -3,6 +3,7 @@
 # Rutas relativas desde la carpeta generate_compose
 PROPERTIES_FILE="../employees.properties"
 OUTPUT_FILE="../docker-compose.yml"
+DOCKER_HUB_USERNAME="martin2000002"
 
 # Verificar que el archivo de propiedades existe
 if [ ! -f "$PROPERTIES_FILE" ]; then
@@ -14,15 +15,14 @@ fi
 cat > $OUTPUT_FILE << EOF
 services:
   central-server:
-    build:
-      context: .
-      dockerfile: DockerfileCentral
+    image: ${DOCKER_HUB_USERNAME}/meeting-central-server:latest
     ports:
       - "9090:9090"
     networks:
       - meeting-network
     volumes:
       - ./data:/app/data
+      - ./employees.properties:/app/employees.properties
 
 EOF
 
@@ -42,12 +42,10 @@ while IFS='=' read -r employee_name employee_port || [[ -n "$employee_name" ]]; 
     # Escribir la configuración del servidor de empleado
     cat >> $OUTPUT_FILE << EOF
   ${container_name}-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - EMPLOYEE_NAME=${employee_name}
-        - EMPLOYEE_PORT=${employee_port}
+    image: ${DOCKER_HUB_USERNAME}/meeting-employee-server:latest
+    environment:
+      - EMPLOYEE_NAME=${employee_name}
+      - EMPLOYEE_PORT=${employee_port}
     ports:
       - "${employee_port}:${employee_port}"
     networks:
@@ -56,6 +54,7 @@ while IFS='=' read -r employee_name employee_port || [[ -n "$employee_name" ]]; 
       - central-server
     volumes:
       - ./data:/app/data
+      - ./employees.properties:/app/employees.properties
 
 EOF
 done < "$PROPERTIES_FILE"
@@ -63,9 +62,7 @@ done < "$PROPERTIES_FILE"
 # Cliente
 cat >> $OUTPUT_FILE << EOF
   client:
-    build:
-      context: .
-      dockerfile: DockerfileClient
+    image: ${DOCKER_HUB_USERNAME}/meeting-client:latest
     networks:
       - meeting-network
     depends_on:
@@ -81,6 +78,7 @@ done
 cat >> $OUTPUT_FILE << EOF
     volumes:
       - ./data:/app/data
+      - ./employees.properties:/app/employees.properties
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
